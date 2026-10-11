@@ -120,6 +120,32 @@ test_assert "System load average is healthy (< 1.5)" \
     "[ \"$(awk '{print ($1 < 2.5) ? 1 : 0}' /proc/loadavg)\" = \"1\" ]"
 
 # ------------------------------------------------------------------------------
+# 6. LIVE TOGGLING VERIFICATION (BIDIRECTIONAL)
+# ------------------------------------------------------------------------------
+info "Testing Live Toggling Capabilities..."
+
+# Test Audio Watchdog toggle off & on
+pkill -9 -f 'audio_watchdog.sh' >/dev/null 2>&1
+sleep 0.5
+test_assert "Live Toggle: Audio Watchdog stops on demand" \
+    "! pgrep -f 'audio_watchdog.sh' >/dev/null"
+
+nohup /system/bin/sh $MODDIR/audio_watchdog.sh >/dev/null 2>&1 &
+sleep 0.5
+test_assert "Live Toggle: Audio Watchdog restarts on demand" \
+    "pgrep -f 'audio_watchdog.sh' >/dev/null"
+
+# Test VoIP AEC Fallback toggle (switch to stock and back to fix)
+cp $MODDIR/audio_effects_stock.xml $MODDIR/system/vendor/etc/audio_effects.xml
+test_assert "Live Toggle: Can switch live to stock audio_effects" \
+    "diff -q $MODDIR/system/vendor/etc/audio_effects.xml $MODDIR/audio_effects_stock.xml"
+
+cp $MODDIR/audio_effects_no_aec.xml $MODDIR/system/vendor/etc/audio_effects.xml
+test_assert "Live Toggle: Can switch live to no-AEC audio_effects" \
+    "diff -q $MODDIR/system/vendor/etc/audio_effects.xml $MODDIR/audio_effects_no_aec.xml"
+
+
+# ------------------------------------------------------------------------------
 # SUMMARY
 # ------------------------------------------------------------------------------
 echo "========================================================"

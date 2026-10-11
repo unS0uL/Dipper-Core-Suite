@@ -200,7 +200,10 @@
   <header>
     <h1>Dipper Core Suite</h1>
     <p>Xiaomi Mi 8 Live System Optimizer</p>
-    <div class="badge">Author: unS0uL</div>
+    <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+      <div class="badge">crDroid 10.10 &bull; Android 14</div>
+      <div class="badge">Author: unS0uL</div>
+    </div>
   </header>
 
   <!-- 1. Screen-Off Fingerprint Wake -->
@@ -286,7 +289,8 @@
   </div>
 
   <div class="footer">
-    Instant live toggles without rebooting &bull; crDroid 10 / Android 14
+    Target: crDroid 10.10 &bull; Android 14 (Qualcomm SDM845)<br>
+    Instant live toggles without rebooting
   </div>
 
   <script type="module">
@@ -333,10 +337,10 @@
     // Toggle Fingerprint Wake
     window.toggleFingerprint = async function(enable) {
       if (enable) {
-        await exec("mount -o bind /data/adb/modules/dipper_core_suite/system/usr/keylayout/uinput-goodix.kl /system/usr/keylayout/uinput-goodix.kl && chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null && echo -n 0 > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null && chmod 0444 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null && pm disable org.lineageos.pocketmode/.BootCompletedReceiver 2>/dev/null && pm disable org.lineageos.pocketmode/.PocketModeService 2>/dev/null && pkill -9 -f org.lineageos.pocketmode 2>/dev/null && pkill -9 -f android.hardware.biometrics.fingerprint");
+        await exec("mount -o bind /data/adb/modules/dipper_core_suite/system/usr/keylayout/uinput-goodix.kl /system/usr/keylayout/uinput-goodix.kl 2>/dev/null; [ -f /data/adb/modules/dipper_core_suite/system/usr/idc/uinput-goodix.idc ] && mount -o bind /data/adb/modules/dipper_core_suite/system/usr/idc/uinput-goodix.idc /system/usr/idc/uinput-goodix.idc 2>/dev/null; chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null; echo -n 0 > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null; chmod 0444 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null; pm disable org.lineageos.pocketmode/.BootCompletedReceiver 2>/dev/null; pm disable org.lineageos.pocketmode/.PocketModeService 2>/dev/null; pkill -9 -f org.lineageos.pocketmode 2>/dev/null; pkill -9 -f android.hardware.biometrics.fingerprint");
         toast("Fingerprint wake fix enabled");
       } else {
-        await exec("umount -l /system/usr/keylayout/uinput-goodix.kl 2>/dev/null; chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null; pm enable org.lineageos.pocketmode/.BootCompletedReceiver 2>/dev/null; pm enable org.lineageos.pocketmode/.PocketModeService 2>/dev/null; pkill -9 -f android.hardware.biometrics.fingerprint");
+        await exec("umount -l /system/usr/keylayout/uinput-goodix.kl 2>/dev/null; umount -l /system/usr/idc/uinput-goodix.idc 2>/dev/null; chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null; echo -n 1 > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null; chmod 0444 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null; pm enable org.lineageos.pocketmode/.BootCompletedReceiver 2>/dev/null; pm enable org.lineageos.pocketmode/.PocketModeService 2>/dev/null; am start-service org.lineageos.pocketmode/.PocketModeService 2>/dev/null; pkill -9 -f android.hardware.biometrics.fingerprint");
         toast("Fingerprint wake fix disabled");
       }
       setTimeout(updateStatus, 800);
