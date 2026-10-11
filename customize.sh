@@ -13,6 +13,7 @@ set_perm_recursive "$MODPATH" 0 0 0755 0644
 set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/action.sh" 0 0 0755
 set_perm "$MODPATH/audio_watchdog.sh" 0 0 0755
+chmod 755 /data/adb 2>/dev/null
 
 ui_print "- Creating boot script link in service.d..."
 mkdir -p /data/adb/service.d

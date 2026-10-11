@@ -1,6 +1,12 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
 
+# 0. Ensure WebUI access permissions
+chmod 755 /data/adb 2>/dev/null
+chmod 755 /data/adb/modules 2>/dev/null
+chmod 755 "$MODDIR" 2>/dev/null
+chmod -R 755 "$MODDIR/webroot" 2>/dev/null
+
 # 1. Permanent Goodix Fingerprint Screen-Off Wake Fix:
 # - Unmask Goodix HW IRQ in kernel driver (gf_spi)
 # - Lock proximity_state node to 0 (read-only 0444) to prevent driver/HAL race

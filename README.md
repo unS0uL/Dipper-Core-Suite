@@ -1,6 +1,6 @@
 # Dipper Core Suite
 **Author:** unS0uL  
-**Version:** 2.0  
+**Version:** 2.1  
 **Target Device:** Xiaomi Mi 8 (`dipper`)  
 **OS Platform:** Android 14 / crDroid 10 / LineageOS 21-22  
 **Root Framework:** Magisk (v26+ / v30+) & KernelSU  
@@ -46,6 +46,23 @@ Access via the **Action** button in the Magisk app or via **KsuWebUI / MMRL**:
 ---
 
 ## Installation
-1. Download the latest `dipper-core-suite-v2.0.zip` from [Releases](https://github.com/unS0uL/Dipper-Core-Suite/releases).
+1. Download the latest `dipper-core-suite-v2.1.zip` from [Releases](https://github.com/unS0uL/Dipper-Core-Suite/releases).
 2. Flash via Magisk or KernelSU.
 3. Reboot device once to register services.
+
+---
+
+## Automated Verification & Test Suite
+The module includes a comprehensive automated test suite (`tools/test_suite.sh`) verifying all low-level subsystems:
+- WebUI accessibility & directory permissions (0755 `/data/adb`)
+- Goodix kernel IRQ unmasking & locked read-only state (0444)
+- `XiaomiPocketMode` neutralization state
+- VoIP hardware AEC absence in active audio configuration
+- Audio Watchdog daemon and Audio HAL responsiveness
+- Statsd service status, `/dev/socket/statsdw`, and system load average
+
+To run diagnostics manually on the device:
+```bash
+su -c 'sh /data/adb/modules/dipper_core_suite/tools/test_suite.sh'
+```
+
