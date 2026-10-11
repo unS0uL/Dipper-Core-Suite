@@ -120,29 +120,63 @@ test_assert "System load average is healthy (< 1.5)" \
     "[ \"$(awk '{print ($1 < 2.5) ? 1 : 0}' /proc/loadavg)\" = \"1\" ]"
 
 # ------------------------------------------------------------------------------
-# 6. LIVE TOGGLING VERIFICATION (BIDIRECTIONAL)
+# 6. LIVE TOGGLING VERIFICATION (BIDIRECTIONAL REVERSE ORDER RESTORATION)
 # ------------------------------------------------------------------------------
-info "Testing Live Toggling Capabilities..."
+info "Testing Full Bidirectional Toggling & Stock Reversion..."
 
-# Test Audio Watchdog toggle off & on
-pkill -9 -f 'audio_watchdog.sh' >/dev/null 2>&1
-sleep 0.5
-test_assert "Live Toggle: Audio Watchdog stops on demand" \
-    "! pgrep -f 'audio_watchdog.sh' >/dev/null"
+# Feature 1: Fingerprint Wake Toggle
+sh $MODDIR/scripts/toggle_fp.sh disable
+sleep 1
+test_assert "Live Toggle: Fingerprint keylayout unmounts on disable" \
+    "! grep -q 'uinput-goodix.kl' /proc/mounts"
+test_assert "Live Toggle: Fingerprint IDC unmounts on disable" \
+    "! grep -q 'uinput-goodix.idc' /proc/mounts"
+test_assert "Live Toggle: PocketMode services restored on disable" \
+    "dumpsys package org.lineageos.pocketmode | grep -A 4 'enabledComponents:' | grep -q 'PocketModeService' || ! dumpsys package org.lineageos.pocketmode | grep -A 4 'disabledComponents:' | grep -q 'PocketModeService'"
+test_assert "Live Toggle: Kernel proximity_state masked to 1 & rw (0644)" \
+    "[ \"$(stat -c %a /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state)\" = \"644\" ]"
 
-nohup /system/bin/sh $MODDIR/audio_watchdog.sh >/dev/null 2>&1 &
-sleep 0.5
-test_assert "Live Toggle: Audio Watchdog restarts on demand" \
-    "pgrep -f 'audio_watchdog.sh' >/dev/null"
+sh $MODDIR/scripts/toggle_fp.sh enable
+sleep 1
+test_assert "Live Toggle: Fingerprint keylayout mounts on re-enable" \
+    "grep -q 'uinput-goodix.kl' /proc/mounts"
+test_assert "Live Toggle: Kernel proximity_state unmasked to 0 & locked (0444)" \
+    "[ \"$(stat -c %a /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state)\" = \"444\" ]"
 
-# Test VoIP AEC Fallback toggle (switch to stock and back to fix)
-cp $MODDIR/audio_effects_stock.xml $MODDIR/system/vendor/etc/audio_effects.xml
-test_assert "Live Toggle: Can switch live to stock audio_effects" \
+# Feature 2: VoIP AEC Fallback Toggle
+sh $MODDIR/scripts/toggle_aec.sh disable
+sleep 1
+test_assert "Live Toggle: VoIP AEC unmounts on disable" \
+    "! grep -q 'audio_effects_no_aec' /proc/mounts"
+test_assert "Live Toggle: Stock AEC config restored on disable" \
     "diff -q $MODDIR/system/vendor/etc/audio_effects.xml $MODDIR/audio_effects_stock.xml"
 
-cp $MODDIR/audio_effects_no_aec.xml $MODDIR/system/vendor/etc/audio_effects.xml
-test_assert "Live Toggle: Can switch live to no-AEC audio_effects" \
+sh $MODDIR/scripts/toggle_aec.sh enable
+sleep 1
+test_assert "Live Toggle: No-AEC config applied on re-enable" \
     "diff -q $MODDIR/system/vendor/etc/audio_effects.xml $MODDIR/audio_effects_no_aec.xml"
+
+# Feature 3: Audio Watchdog Toggle
+sh $MODDIR/scripts/toggle_watchdog.sh disable
+sleep 0.5
+test_assert "Live Toggle: Audio Watchdog stops on disable" \
+    "! pgrep -f 'audio_watchdog.sh' >/dev/null"
+
+sh $MODDIR/scripts/toggle_watchdog.sh enable
+sleep 0.5
+test_assert "Live Toggle: Audio Watchdog restarts on re-enable" \
+    "pgrep -f 'audio_watchdog.sh' >/dev/null"
+
+# Feature 4: Statsd Toggle
+sh $MODDIR/scripts/toggle_statsd.sh disable
+sleep 0.5
+test_assert "Live Toggle: Statsd stops on disable" \
+    "[ \"$(getprop init.svc.statsd)\" = \"stopped\" ] || [ \"$(getprop init.svc.statsd)\" = \"\" ]"
+
+sh $MODDIR/scripts/toggle_statsd.sh enable
+sleep 1
+test_assert "Live Toggle: Statsd restarts on re-enable" \
+    "[ \"$(getprop init.svc.statsd)\" = \"running\" ]"
 
 
 # ------------------------------------------------------------------------------
