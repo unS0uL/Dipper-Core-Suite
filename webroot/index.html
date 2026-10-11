@@ -188,6 +188,35 @@
       display: flex;
       gap: 8px;
     }
+    .mode-selector {
+      display: flex;
+      background: #0d0f14;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .mode-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .mode-btn.active {
+      background: var(--orange);
+      color: #000000;
+      font-weight: 700;
+      box-shadow: 0 0 10px var(--orange-glow);
+    }
+
     .footer {
       text-align: center;
       margin-top: 24px;
@@ -288,6 +317,28 @@
     </div>
   </div>
 
+  <!-- 5. Kinematic Scroll & Touch Physics Profile -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Kinematic Scroll & Touch Boost</div>
+      <label class="switch">
+        <input type="checkbox" id="toggle-scroll" onchange="toggleScroll(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="card-desc">
+      Eliminates notification shade micro-jank and kinetic fling stutter via Core Unrestrict, 60Hz VSYNC decay damping & Touch Boost.
+    </div>
+    <div class="switch-row">
+      <span class="card-desc">Physics Profile:</span>
+      <span id="scroll-status" class="status-tag status-inactive">Checking...</span>
+    </div>
+    <div class="mode-selector">
+      <button id="mode-btn-ios" class="mode-btn active" onclick="switchScrollMode('ios')">🍎 iOS Inertia (Smooth)</button>
+      <button id="mode-btn-android" class="mode-btn" onclick="switchScrollMode('android')">🤖 Android (Snappy)</button>
+    </div>
+  </div>
+
   <div class="footer">
     Target: crDroid 10.10 &bull; Android 14 (Qualcomm SDM845)<br>
     Instant live toggles without rebooting
@@ -329,10 +380,56 @@
         const statsdEl = document.getElementById("statsd-status");
         statsdEl.textContent = statsdActive ? "Running" : "Stopped";
         statsdEl.className = "status-tag " + (statsdActive ? "status-active" : "status-inactive");
+
+        // 5. Kinematic Scroll check
+        const resScroll = await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh status");
+        const scrollStatus = resScroll.stdout.trim();
+        const scrollActive = scrollStatus.startsWith("enabled");
+        const scrollMode = scrollStatus.includes("android") ? "android" : "ios";
+
+        document.getElementById("toggle-scroll").checked = scrollActive;
+        const scrollEl = document.getElementById("scroll-status");
+        if (scrollActive) {
+          scrollEl.textContent = scrollMode === "ios" ? "Active (iOS Inertia)" : "Active (Android Snappy)";
+          scrollEl.className = "status-tag status-active";
+        } else {
+          scrollEl.textContent = "Disabled (Stock)";
+          scrollEl.className = "status-tag status-inactive";
+        }
+
+        document.getElementById("mode-btn-ios").className = "mode-btn " + (scrollMode === "ios" ? "active" : "");
+        document.getElementById("mode-btn-android").className = "mode-btn " + (scrollMode === "android" ? "active" : "");
       } catch (e) {
         console.error(e);
       }
     }
+
+    // Toggle Kinematic Scroll Profile
+    let currentMode = "ios";
+    window.toggleScroll = async function(enable) {
+      if (enable) {
+        await exec(`sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh enable ${currentMode}`);
+        toast(`Kinematic Boost enabled (${currentMode.toUpperCase()})`);
+      } else {
+        await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh disable");
+        toast("Restored default stock scroll physics");
+      }
+      setTimeout(updateStatus, 800);
+    };
+
+    window.switchScrollMode = async function(mode) {
+      currentMode = mode;
+      const isEnabled = document.getElementById("toggle-scroll").checked;
+      if (isEnabled) {
+        await exec(`sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh enable ${mode}`);
+        toast(`Switched to ${mode.toUpperCase()} physics mode`);
+      } else {
+        await exec(`sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh set_mode ${mode}`);
+        toast(`Selected ${mode.toUpperCase()} (enable to apply)`);
+      }
+      setTimeout(updateStatus, 600);
+    };
+
 
     // Toggle Fingerprint Wake
     window.toggleFingerprint = async function(enable) {

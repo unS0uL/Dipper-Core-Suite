@@ -15,3 +15,7 @@ sh "$MODDIR/scripts/toggle_statsd.sh" enable
 
 # 3. Start Audio Watchdog Daemon:
 sh "$MODDIR/scripts/toggle_watchdog.sh" enable
+
+# 4. Start Kinematic & Touch Performance Profile (default: iOS physics):
+sh "$MODDIR/scripts/toggle_scroll_profile.sh" enable ios
+
