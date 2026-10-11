@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Dipper Core Suite</title>
+  <style>
+    :root {
+      /* Deep Black & Rich Warm Orange */
+      --bg: #090a0f;
+      --card-bg: #14161d;
+      --card-border: #232733;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --orange: #f97316;
+      --orange-hover: #ea580c;
+      --orange-glow: rgba(249, 115, 22, 0.22);
+      --orange-subtle: rgba(249, 115, 22, 0.12);
+      
+      --accent-green: #10b981;
+      --danger-red: #ef4444;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 22px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--orange);
+      text-shadow: 0 0 16px var(--orange-glow);
+    }
+    header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--orange-subtle);
+      color: var(--orange);
+      padding: 3px 12px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 8px;
+      border: 1px solid rgba(249, 115, 22, 0.35);
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      transition: border-color 0.2s;
+    }
+    .card:hover {
+      border-color: rgba(249, 115, 22, 0.4);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .switch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #334155;
+      transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 26px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #cbd5e1;
+      transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--orange);
+      box-shadow: 0 0 10px var(--orange-glow);
+    }
+    input:checked + .slider:before {
+      transform: translateX(22px);
+      background-color: #ffffff;
+    }
+    .status-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+    }
+    .status-active {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-inactive {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger-red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .divider {
+      height: 1px;
+      background: var(--card-border);
+      margin: 4px 0;
+    }
+    .btn {
+      background: var(--orange);
+      color: #000000;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      width: 100%;
+      text-align: center;
+    }
+    .btn:active {
+      background: var(--orange-hover);
+      transform: scale(0.98);
+    }
+    .btn-secondary {
+      background: #232733;
+      color: var(--text);
+      border: 1px solid #334155;
+    }
+    .btn-secondary:active {
+      background: #334155;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dipper Core Suite</h1>
+    <p>Xiaomi Mi 8 Live System Optimizer</p>
+    <div class="badge">Author: unS0uL</div>
+  </header>
+
+  <!-- 1. Screen-Off Fingerprint Wake -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Screen-Off Fingerprint Wake</div>
+      <label class="switch">
+        <input type="checkbox" id="toggle-fp" onchange="toggleFingerprint(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="card-desc">
+      Hardware display wake trigger on Goodix touch sensor (WAKEUP key 106 mapping).
+    </div>
+    <div class="switch-row">
+      <span class="card-desc">Keylayout Status:</span>
+      <span id="fp-status" class="status-tag status-inactive">Checking...</span>
+    </div>
+  </div>
+
+  <!-- 2. VoIP AEC Fallback (Echo Fix) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">VoIP Echo Fix (AEC Fallback)</div>
+      <label class="switch">
+        <input type="checkbox" id="toggle-aec" onchange="toggleAEC(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="card-desc">
+      Hides faulty Qualcomm AEC from VOICE_COMMUNICATION to fix call echo/muting without reboot.
+    </div>
+    <div class="switch-row">
+      <span class="card-desc">Call Echo Filter:</span>
+      <span id="aec-status" class="status-tag status-inactive">Checking...</span>
+    </div>
+  </div>
+
+  <!-- 3. Unified Audio Watchdog & Recovery Tools -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Audio Ringer Watchdog & Recovery</div>
+      <label class="switch">
+        <input type="checkbox" id="toggle-watchdog" onchange="toggleWatchdog(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="card-desc">
+      Automatically monitors ringer transitions (Sound / Vibrate / Mute) and restores frozen audio routing within 1 second.
+    </div>
+    <div class="switch-row">
+      <span class="card-desc">Auto-Guard Daemon:</span>
+      <span id="watchdog-status" class="status-tag status-inactive">Checking...</span>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="card-desc">
+      Manual override buttons to immediately restart the audio server or reset speaker routing:
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="restartAudio()">Restart Audio HAL</button>
+      <button class="btn btn-secondary" onclick="restoreSpeakerRouting()">Reset Speaker</button>
+    </div>
+  </div>
+
+  <!-- 4. Statsd & Battery Optimizer -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Statsd & Battery Optimizer</div>
+      <label class="switch">
+        <input type="checkbox" id="toggle-statsd" onchange="toggleStatsd(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="card-desc">
+      Eliminates 5ms nanosleep daemon loop, restores full SDM845 Deep Sleep (95% suspend).
+    </div>
+    <div class="switch-row">
+      <span class="card-desc">Statsd Service:</span>
+      <span id="statsd-status" class="status-tag status-inactive">Checking...</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    Instant live toggles without rebooting &bull; crDroid 10 / Android 14
+  </div>
+
+  <script type="module">
+    import { exec, toast } from './js/kernelsu.js';
+
+    async function updateStatus() {
+      try {
+        // 1. Fingerprint check
+        const resFP = await exec("grep -q 'uinput-goodix.kl' /proc/mounts && echo 1 || echo 0");
+        const fpActive = resFP.stdout.trim() === "1";
+        document.getElementById("toggle-fp").checked = fpActive;
+        const fpEl = document.getElementById("fp-status");
+        fpEl.textContent = fpActive ? "Active" : "Disabled";
+        fpEl.className = "status-tag " + (fpActive ? "status-active" : "status-inactive");
+
+        // 2. VoIP Echo fix (AEC) check
+        const resAEC = await exec("grep -q 'audio_effects.xml' /proc/mounts && grep -q 'audio_effects_no_aec.xml' /proc/mounts && echo 1 || (diff -q /data/adb/modules/dipper_core_suite/system/vendor/etc/audio_effects.xml /data/adb/modules/dipper_core_suite/audio_effects_no_aec.xml >/dev/null 2>&1 && echo 1 || echo 0)");
+        const aecActive = resAEC.stdout.trim() === "1";
+        document.getElementById("toggle-aec").checked = aecActive;
+        const aecEl = document.getElementById("aec-status");
+        aecEl.textContent = aecActive ? "Fixed (No Echo)" : "Stock (Default)";
+        aecEl.className = "status-tag " + (aecActive ? "status-active" : "status-inactive");
+
+        // 3. Audio Watchdog check
+        const resWd = await exec("pgrep -f 'audio_watchdog.sh' >/dev/null && echo 1 || echo 0");
+        const wdActive = resWd.stdout.trim() === "1";
+        document.getElementById("toggle-watchdog").checked = wdActive;
+        const wdEl = document.getElementById("watchdog-status");
+        wdEl.textContent = wdActive ? "Auto Guard Active" : "Disabled";
+        wdEl.className = "status-tag " + (wdActive ? "status-active" : "status-inactive");
+
+        // 4. Statsd check
+        const resStatsd = await exec("getprop init.svc.statsd");
+        const statsdActive = resStatsd.stdout.trim() === "running";
+        document.getElementById("toggle-statsd").checked = statsdActive;
+        const statsdEl = document.getElementById("statsd-status");
+        statsdEl.textContent = statsdActive ? "Running" : "Stopped";
+        statsdEl.className = "status-tag " + (statsdActive ? "status-active" : "status-inactive");
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Toggle Fingerprint Wake
+    window.toggleFingerprint = async function(enable) {
+      if (enable) {
+        await exec("mount -o bind /data/adb/modules/dipper_core_suite/system/usr/keylayout/uinput-goodix.kl /system/usr/keylayout/uinput-goodix.kl && echo 0 > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state && pkill -9 -f android.hardware.biometrics.fingerprint");
+        toast("Fingerprint wake fix enabled");
+      } else {
+        await exec("umount -l /system/usr/keylayout/uinput-goodix.kl 2>/dev/null; pkill -9 -f android.hardware.biometrics.fingerprint");
+        toast("Fingerprint wake fix disabled");
+      }
+      setTimeout(updateStatus, 800);
+    };
+
+    // Toggle VoIP Echo Fix (AEC Fallback)
+    window.toggleAEC = async function(enable) {
+      if (enable) {
+        await exec("cp /data/adb/modules/dipper_core_suite/audio_effects_no_aec.xml /data/adb/modules/dipper_core_suite/system/vendor/etc/audio_effects.xml && mount -o bind /data/adb/modules/dipper_core_suite/audio_effects_no_aec.xml /vendor/etc/audio_effects.xml && pkill -9 -f android.hardware.audio.service; killall -9 audioserver 2>/dev/null");
+        toast("VoIP Echo fix enabled (No AEC)");
+      } else {
+        await exec("cp /data/adb/modules/dipper_core_suite/audio_effects_stock.xml /data/adb/modules/dipper_core_suite/system/vendor/etc/audio_effects.xml && mount -o bind /data/adb/modules/dipper_core_suite/audio_effects_stock.xml /vendor/etc/audio_effects.xml && pkill -9 -f android.hardware.audio.service; killall -9 audioserver 2>/dev/null");
+        toast("Stock AEC restored");
+      }
+      setTimeout(updateStatus, 1000);
+    };
+
+    // Toggle Audio Watchdog
+    window.toggleWatchdog = async function(enable) {
+      if (enable) {
+        await exec("pkill -f 'audio_watchdog.sh' 2>/dev/null; nohup /system/bin/sh /data/adb/modules/dipper_core_suite/audio_watchdog.sh >/dev/null 2>&1 &");
+        toast("Audio Watchdog enabled");
+      } else {
+        await exec("pkill -9 -f 'audio_watchdog.sh' 2>/dev/null");
+        toast("Audio Watchdog disabled");
+      }
+      setTimeout(updateStatus, 800);
+    };
+
+    // Toggle Statsd Battery Optimizer
+    window.toggleStatsd = async function(enable) {
+      if (enable) {
+        await exec("resetprop ctl.start statsd && sleep 1 && pkill -f org.lineageos.pocketmode; pkill -f co.aospa.sense");
+        toast("Statsd optimization enabled");
+      } else {
+        await exec("resetprop ctl.stop statsd");
+        toast("Statsd stopped");
+      }
+      setTimeout(updateStatus, 800);
+    };
+
+    // Manual audio restart
+    window.restartAudio = async function() {
+      toast("Restarting Audio HAL...");
+      await exec("pkill -9 -f android.hardware.audio.service; killall -9 audioserver 2>/dev/null");
+      setTimeout(() => {
+        toast("Audio stack restarted successfully!");
+      }, 1000);
+    };
+
+    // Force speaker routing
+    window.restoreSpeakerRouting = async function() {
+      toast("Restoring speaker routing...");
+      await exec("media volume --stream 3 --set 10 && media volume --stream 2 --set 7 && pkill -9 -f android.hardware.audio.service");
+      setTimeout(() => {
+        toast("Speaker routing restored!");
+      }, 1000);
+    };
+
+    updateStatus();
+  </script>
+</body>
+</html>

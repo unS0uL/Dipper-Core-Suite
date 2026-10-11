@@ -1,0 +1,10 @@
+# Local and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*~
+
+# Temporary artifacts
+*.log
+*.tmp
