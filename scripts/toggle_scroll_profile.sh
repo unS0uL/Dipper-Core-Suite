@@ -44,12 +44,15 @@ apply_core_unrestrict() {
     pid=$(pidof com.android.systemui 2>/dev/null)
     if [ -n "$pid" ]; then
         echo "$pid" > /dev/cpuset/top-app/cgroup.procs 2>/dev/null
-        taskset -p f0 "$pid" 2>/dev/null || taskset -p 90 "$pid" 2>/dev/null || taskset -p ff "$pid" 2>/dev/null
-        for tid in $(ls /proc/$pid/task 2>/dev/null); do
-            comm=$(cat /proc/$pid/task/$tid/comm 2>/dev/null)
+        taskset -p f0 "$pid" >/dev/null 2>&1 || taskset -p 90 "$pid" >/dev/null 2>&1 || taskset -p ff "$pid" >/dev/null 2>&1
+        for f in /proc/$pid/task/*/comm; do
+            [ -r "$f" ] || continue
+            read -r comm < "$f" 2>/dev/null
             case "$comm" in
                 *Render*|*systemui*)
-                    taskset -p f0 "$tid" 2>/dev/null || taskset -p 90 "$tid" 2>/dev/null || taskset -p ff "$tid" 2>/dev/null
+                    tid="${f#/proc/$pid/task/}"
+                    tid="${tid%/comm}"
+                    taskset -p f0 "$tid" >/dev/null 2>&1 || taskset -p 90 "$tid" >/dev/null 2>&1 || taskset -p ff "$tid" >/dev/null 2>&1
                     ;;
             esac
         done

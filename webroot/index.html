@@ -199,6 +199,10 @@
     }
     .mode-btn {
       flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       background: transparent;
       border: none;
       color: var(--text-muted);
@@ -207,14 +211,27 @@
       font-weight: 600;
       border-radius: 7px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s ease-out;
       text-align: center;
+      user-select: none;
     }
     .mode-btn.active {
       background: var(--orange);
       color: #000000;
       font-weight: 700;
       box-shadow: 0 0 10px var(--orange-glow);
+    }
+    .spinner {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border: 2px solid rgba(0, 0, 0, 0.25);
+      border-top-color: #000000;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .footer {
@@ -397,29 +414,67 @@
           scrollEl.className = "status-tag status-inactive";
         }
 
-        document.getElementById("mode-btn-ios").className = "mode-btn " + (scrollMode === "ios" ? "active" : "");
-        document.getElementById("mode-btn-android").className = "mode-btn " + (scrollMode === "android" ? "active" : "");
+        renderModeButtons(scrollMode, false);
       } catch (e) {
         console.error(e);
+      }
+    }
+
+    function renderModeButtons(activeMode, isApplying) {
+      const btnIos = document.getElementById("mode-btn-ios");
+      const btnAndroid = document.getElementById("mode-btn-android");
+
+      btnIos.className = "mode-btn " + (activeMode === "ios" ? "active" : "");
+      btnAndroid.className = "mode-btn " + (activeMode === "android" ? "active" : "");
+
+      const labelIos = '🍎 iOS Inertia (Smooth)';
+      const labelAndroid = '🤖 Android (Snappy)';
+
+      if (isApplying) {
+        if (activeMode === "ios") {
+          btnIos.innerHTML = `${labelIos} <span class="spinner"></span>`;
+          btnAndroid.textContent = labelAndroid;
+        } else {
+          btnAndroid.innerHTML = `${labelAndroid} <span class="spinner"></span>`;
+          btnIos.textContent = labelIos;
+        }
+      } else {
+        btnIos.textContent = labelIos;
+        btnAndroid.textContent = labelAndroid;
       }
     }
 
     // Toggle Kinematic Scroll Profile
     let currentMode = "ios";
     window.toggleScroll = async function(enable) {
+      const scrollEl = document.getElementById("scroll-status");
       if (enable) {
+        scrollEl.textContent = "Applying...";
+        scrollEl.className = "status-tag status-active";
+        renderModeButtons(currentMode, true);
         await exec(`sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh enable ${currentMode}`);
         toast(`Kinematic Boost enabled (${currentMode.toUpperCase()})`);
       } else {
+        scrollEl.textContent = "Reverting to Stock...";
+        scrollEl.className = "status-tag status-inactive";
         await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh disable");
         toast("Restored default stock scroll physics");
       }
-      setTimeout(updateStatus, 800);
+      setTimeout(updateStatus, 300);
     };
 
     window.switchScrollMode = async function(mode) {
       currentMode = mode;
       const isEnabled = document.getElementById("toggle-scroll").checked;
+
+      // 1. Instant optimistic UI switch + round spinner indicator
+      renderModeButtons(mode, true);
+      const scrollEl = document.getElementById("scroll-status");
+      if (isEnabled) {
+        scrollEl.textContent = `Applying ${mode.toUpperCase()}...`;
+      }
+
+      // 2. Execute script in background
       if (isEnabled) {
         await exec(`sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh enable ${mode}`);
         toast(`Switched to ${mode.toUpperCase()} physics mode`);
@@ -427,7 +482,9 @@
         await exec(`sh /data/adb/modules/dipper_core_suite/scripts/toggle_scroll_profile.sh set_mode ${mode}`);
         toast(`Selected ${mode.toUpperCase()} (enable to apply)`);
       }
-      setTimeout(updateStatus, 600);
+
+      // 3. Confirm status
+      setTimeout(updateStatus, 200);
     };
 
 
