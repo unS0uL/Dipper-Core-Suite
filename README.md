@@ -18,7 +18,7 @@ Every feature can be dynamically enabled or disabled in real time **without rebo
 
 | Feature | Problem Solved | Mechanism | Live Toggle |
 |---|---|---|:---:|
-| **Fingerprint Screen-Off Wake** | Rear Goodix scanner fails to wake/unlock after 5s deep sleep | Injects active `WAKE` keylayout & unmasks proximity | ✅ Yes |
+| **Fingerprint Screen-Off Wake** | Rear Goodix scanner fails to wake/unlock when screen is off in hand | Unmasks kernel IRQ 334, locks `proximity_state` to 0, neutralizes buggy `XiaomiPocketMode`, & injects `WAKE` keylayout | ✅ Yes |
 | **Statsd Battery Optimizer** | SDM845 fails to enter Deep Sleep (0% suspend time, heavy drain) | Restarts `statsd` & breaks infinite 5ms daemon retry loop | ✅ Yes |
 | **VoIP AEC Fallback** | Remote party hears loud echo during VoIP speakerphone calls | Disables broken hardware AEC in `audio_effects.xml`, enabling app AEC3 | ✅ Yes |
 | **Audio Ringer Watchdog** | Sound permanently disappears after toggling ringer presets | Background daemon detects transition and auto-restores Audio HAL within 1s | ✅ Yes |

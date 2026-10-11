@@ -333,10 +333,10 @@
     // Toggle Fingerprint Wake
     window.toggleFingerprint = async function(enable) {
       if (enable) {
-        await exec("mount -o bind /data/adb/modules/dipper_core_suite/system/usr/keylayout/uinput-goodix.kl /system/usr/keylayout/uinput-goodix.kl && echo 0 > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state && pkill -9 -f android.hardware.biometrics.fingerprint");
+        await exec("mount -o bind /data/adb/modules/dipper_core_suite/system/usr/keylayout/uinput-goodix.kl /system/usr/keylayout/uinput-goodix.kl && chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null && echo -n 0 > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null && chmod 0444 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null && pm disable org.lineageos.pocketmode/.BootCompletedReceiver 2>/dev/null && pm disable org.lineageos.pocketmode/.PocketModeService 2>/dev/null && pkill -9 -f org.lineageos.pocketmode 2>/dev/null && pkill -9 -f android.hardware.biometrics.fingerprint");
         toast("Fingerprint wake fix enabled");
       } else {
-        await exec("umount -l /system/usr/keylayout/uinput-goodix.kl 2>/dev/null; pkill -9 -f android.hardware.biometrics.fingerprint");
+        await exec("umount -l /system/usr/keylayout/uinput-goodix.kl 2>/dev/null; chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null; pm enable org.lineageos.pocketmode/.BootCompletedReceiver 2>/dev/null; pm enable org.lineageos.pocketmode/.PocketModeService 2>/dev/null; pkill -9 -f android.hardware.biometrics.fingerprint");
         toast("Fingerprint wake fix disabled");
       }
       setTimeout(updateStatus, 800);
