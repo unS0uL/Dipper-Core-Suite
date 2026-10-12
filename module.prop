@@ -1,7 +1,7 @@
 id=dipper_core_suite
 name=Dipper Core Suite
-version=2.2
-versionCode=22
+version=2.4
+versionCode=24
 author=unS0uL
-description=All-in-One system optimizer for Xiaomi Mi 8 (dipper): Goodix screen-off fingerprint wake fix, statsd battery drain fix, VoIP AEC fallback, Audio HAL recovery, and WebUI dashboard.
+description=All-in-One system optimizer for Xiaomi Mi 8 (dipper): Goodix screen-off fingerprint wake fix, statsd battery drain fix, VoIP AEC fallback, Audio HAL recovery, Kinematic 60Hz Scroll Engine, and WebUI dashboard.
 actionIcon=settings.png

@@ -120,9 +120,21 @@ test_assert "System load average is healthy (< 1.5)" \
     "[ \"$(awk '{print ($1 < 2.5) ? 1 : 0}' /proc/loadavg)\" = \"1\" ]"
 
 # ------------------------------------------------------------------------------
-# 6. LIVE TOGGLING VERIFICATION (BIDIRECTIONAL REVERSE ORDER RESTORATION)
+# 6. FEATURE 5: KINEMATIC & TOUCH SCROLL PROFILES
+# ------------------------------------------------------------------------------
+info "Testing Kinematic & Touch Performance Profiles..."
+
+test_assert "scroll_stock.conf baseline file is present" \
+    "[ -f $MODDIR/scroll_stock.conf ]"
+
+test_assert "toggle_scroll_profile.sh script exists and is executable" \
+    "[ -x $MODDIR/scripts/toggle_scroll_profile.sh ]"
+
+# ------------------------------------------------------------------------------
+# 7. LIVE TOGGLING VERIFICATION (BIDIRECTIONAL REVERSE ORDER RESTORATION)
 # ------------------------------------------------------------------------------
 info "Testing Full Bidirectional Toggling & Stock Reversion..."
+
 
 # Feature 1: Fingerprint Wake Toggle
 sh $MODDIR/scripts/toggle_fp.sh disable
@@ -178,7 +190,50 @@ sleep 1
 test_assert "Live Toggle: Statsd restarts on re-enable" \
     "[ \"$(getprop init.svc.statsd)\" = \"running\" ]"
 
+# Feature 5: Kinematic Scroll Profiles (Unified: iOS vs Android vs Stock Restoration)
+sh $MODDIR/scripts/toggle_scroll_profile.sh enable ios
+sleep 0.5
+test_assert "Live Toggle: iOS mode sets animator_duration_scale to 1.0" \
+    "[ \"$(settings get global animator_duration_scale)\" = \"1.0\" ]"
+test_assert "Live Toggle: iOS mode sets 60ms (4-frame) down_rate_limit" \
+    "[ \"$(cat /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us)\" = \"60000\" ]"
+test_assert "Live Toggle: iOS mode sets 350ms input_boost_ms" \
+    "[ \"$(cat /sys/module/cpu_boost/parameters/input_boost_ms)\" = \"350\" ]"
+test_assert "Live Toggle: iOS mode unthrottles cpuset to 0-7" \
+    "[ \"$(cat /dev/cpuset/restricted/cpus)\" = \"0-7\" ]"
+test_assert "Live Toggle: iOS mode sets schedtune.boost to 25" \
+    "[ \"$(cat /dev/stune/top-app/schedtune.boost)\" = \"25\" ]"
+test_assert "Live Toggle: iOS mode sets GPU min_pwrlevel to 5 (342 MHz)" \
+    "[ \"$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel)\" = \"5\" ]"
 
+sh $MODDIR/scripts/toggle_scroll_profile.sh enable android
+sleep 0.5
+test_assert "Live Toggle: Android mode sets animator_duration_scale to 0.5" \
+    "[ \"$(settings get global animator_duration_scale)\" = \"0.5\" ]"
+test_assert "Live Toggle: Android mode sets 33.3ms (2-frame) down_rate_limit" \
+    "[ \"$(cat /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us)\" = \"33333\" ]"
+test_assert "Live Toggle: Android mode sets 250ms input_boost_ms" \
+    "[ \"$(cat /sys/module/cpu_boost/parameters/input_boost_ms)\" = \"250\" ]"
+test_assert "Live Toggle: Android mode sets schedtune.boost to 25" \
+    "[ \"$(cat /dev/stune/top-app/schedtune.boost)\" = \"25\" ]"
+
+sh $MODDIR/scripts/toggle_scroll_profile.sh disable
+sleep 0.5
+test_assert "Live Toggle: Disable restores stock schedtune.boost to 10" \
+    "[ \"$(cat /dev/stune/top-app/schedtune.boost)\" = \"10\" ]"
+test_assert "Live Toggle: Disable restores stock down_rate_limit to 20000" \
+    "[ \"$(cat /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us)\" = \"20000\" ]"
+test_assert "Live Toggle: Disable restores stock input_boost_ms to 80" \
+    "[ \"$(cat /sys/module/cpu_boost/parameters/input_boost_ms)\" = \"80\" ]"
+test_assert "Live Toggle: Disable restores stock GPU min_pwrlevel to 6 (257 MHz)" \
+    "[ \"$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel)\" = \"6\" ]"
+test_assert "Live Toggle: Disable restores stock restricted cpus to 0-3" \
+    "[ \"$(cat /dev/cpuset/restricted/cpus)\" = \"0-3\" ]"
+
+sh $MODDIR/scripts/toggle_scroll_profile.sh enable ios
+sleep 0.5
+test_assert "Live Toggle: Re-enables iOS profile successfully" \
+    "[ \"$(sh $MODDIR/scripts/toggle_scroll_profile.sh status)\" = \"enabled:ios\" ]"
 # ------------------------------------------------------------------------------
 # SUMMARY
 # ------------------------------------------------------------------------------
