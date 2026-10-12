@@ -1,6 +1,6 @@
 # Dipper Core Suite
 **Author:** unS0uL  
-**Version:** 2.4  
+**Version:** 2.5  
 **Target Device:** Xiaomi Mi 8 (`dipper`)  
 **OS Platform:** Android 14 (crDroid 10.10) / LineageOS 21-22  
 **Root Framework:** Magisk (v26+ / v30+) & KernelSU  
@@ -49,7 +49,7 @@ Access via the **Action** button in the Magisk app or via **KsuWebUI / MMRL**:
 ---
 
 ## Installation
-1. Download the latest `dipper-core-suite-v2.4.zip` from [Releases](https://github.com/unS0uL/Dipper-Core-Suite/releases).
+1. Download the latest `dipper-core-suite-v2.5.zip` from [Releases](https://github.com/unS0uL/Dipper-Core-Suite/releases).
 2. Flash via Magisk or KernelSU.
 3. Reboot device once to register services.
 
