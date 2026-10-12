@@ -4,4 +4,5 @@ version=2.4
 versionCode=24
 author=unS0uL
 description=All-in-One system optimizer for Xiaomi Mi 8 (dipper): Goodix screen-off fingerprint wake fix, statsd battery drain fix, VoIP AEC fallback, Audio HAL recovery, Kinematic 60Hz Scroll Engine, and WebUI dashboard.
+updateJson=https://raw.githubusercontent.com/unS0uL/Dipper-Core-Suite/main/update.json
 actionIcon=settings.png
