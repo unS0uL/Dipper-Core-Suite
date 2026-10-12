@@ -29,5 +29,25 @@ fi
 RUNNER
 chmod 755 /data/adb/service.d/99-dipper-core.sh
 
+# Hot-Reload Live Apply (Zero-Reboot update engine)
+LIVE_MODPATH="/data/adb/modules/dipper_core_suite"
+if $BOOTMODE && [ "$MODPATH" != "$LIVE_MODPATH" ]; then
+    ui_print "- [Hot-Reload] Syncing live module files..."
+    mkdir -p "$LIVE_MODPATH"
+    cp -af "$MODPATH/." "$LIVE_MODPATH/"
+    
+    # Preserve existing user scroll preference if present
+    if [ -f "$LIVE_MODPATH/scroll_profile.conf" ]; then
+        cp -af "$LIVE_MODPATH/scroll_profile.conf" "$MODPATH/scroll_profile.conf" 2>/dev/null
+    fi
+
+    ui_print "- [Hot-Reload] Applying tweaks live without reboot..."
+    # Apply tweaks directly via live service runner
+    sh "$LIVE_MODPATH/service.sh" >/dev/null 2>&1 &
+
+    ui_print "- [Hot-Reload] Live update applied! Reboot NOT required."
+fi
+
 ui_print "- Installation complete!"
 ui_print "- Open WebUI anytime via Magisk Action button."
+

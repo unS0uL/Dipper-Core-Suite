@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.6
+- **Zero-Reboot Hot-Reload Engine**: Live module synchronization into `/data/adb/modules/` during Magisk installation.
+- **On-the-Fly Tweaks Apply**: Instant background application of system tuning without requiring device reboot.
+- **State Preservation**: Persists active user kinematics/scroll settings across seamless upgrades.
+
 ## v2.5
 - **Magisk Auto-Update Engine**: Native one-click updates directly inside Magisk Modules tab via `updateJson`.
 - **Packaging Refinement**: Pure 27 KB module footprint excluding documentation from installation zip.
