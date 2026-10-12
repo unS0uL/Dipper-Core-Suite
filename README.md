@@ -48,12 +48,25 @@ Access via the **Action** button in the Magisk app or via **KsuWebUI / MMRL**:
 
 ---
 
-## Installation
-1. Download the latest `dipper-core-suite-v2.5.zip` from [Releases](https://github.com/unS0uL/Dipper-Core-Suite/releases).
+## Installation & Updates
+1. Download the latest `dipper-core-suite-v<version>.zip` from [Releases](https://github.com/unS0uL/Dipper-Core-Suite/releases).
 2. Flash via Magisk or KernelSU.
-3. Reboot device once to register services.
+3. **Zero-Reboot Hot-Reload**: Starting from v2.6, updates applied via Magisk take effect immediately without requiring a device reboot.
 
 ---
+
+## Release Packaging Convention
+All official module release artifacts adhere to the strict naming convention:
+- **Zip Filename Mask**: `dipper-core-suite-v<X.Y>.zip` (e.g., `dipper-core-suite-v2.6.zip`)
+- **Release Tag**: `v<X.Y>` (e.g., `v2.6`)
+- **Release Title**: `v<X.Y> - <Short Summary>` (e.g., `v2.6 - Zero-Reboot Hot-Reload Engine`)
+- **Zip Contents**: Pure flashable Magisk module root only (`action.sh`, `customize.sh`, `module.prop`, `service.sh`, `system/`, `scripts/`, `tools/`, `webroot/`).
+- **Exclusions**: Repository documentation (`docs/`, `README.md`, `CHANGELOG.md`, `update.json`, `.git/`, `.gitignore`) is strictly excluded from flashable release zips to minimize footprint.
+
+Packaging command:
+```bash
+zip -r dipper-core-suite-v<version>.zip . -x ".*" "docs/*" "README.md" "CHANGELOG.md" "update.json"
+```
 
 ## Automated Verification & Test Suite
 The module includes a comprehensive automated test suite (`tools/test_suite.sh`) with 52 automated assertions verifying all low-level subsystems:
