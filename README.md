@@ -6,11 +6,20 @@ Consolidates hardware display wake fixes, VoIP acoustic echo cancellation fallba
 
 ---
 
+> [!WARNING]
+> **Disclaimer & Safety:**  
+> Any system modifications, flashing, and root module usage are performed entirely at your own risk. Neither the author nor contributors take responsibility for damaged hardware, bricked devices, or lost data.  
+> As with any root modifications, conflicts with other modules, custom ROM variations, or improper installation can potentially cause bootloops. Always maintain a current backup (TWRP/Nandroid or stock `boot.img`) and know how to boot into Safe Mode or remove modules via recovery if an issue arises.
+
+---
+
 ## WebUI Live Dashboard
 
 Every feature can be dynamically toggled on or off in real time **without rebooting the device**. When toggled off, the module restores the **exact stock system state in reverse order**.
 
-![Dipper Core Suite WebUI](https://raw.githubusercontent.com/unS0uL/Dipper-Core-Suite/media/webui_dashboard_preview.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/unS0uL/Dipper-Core-Suite/media/webui_dashboard.png" alt="Dipper Core Suite WebUI" width="420">
+</p>
 
 Access the dashboard anytime:
 - In **Magisk**: tap the **Action** button next to the module.
