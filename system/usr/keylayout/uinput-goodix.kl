@@ -1,6 +1,6 @@
-# Goodix Touch sensor driver - Screen-Off Wake Layout
-key 96    DPAD_CENTER
-key 102   DPAD_CENTER
+# Goodix Touch sensor driver - Screen-Off Wake Layout (Disabled DPAD_CENTER to prevent phantom Enter)
+# key 96    DPAD_CENTER
+# key 102   DPAD_CENTER
 key 105   DPAD_LEFT
 key 106   DPAD_RIGHT  WAKE
 key 116   POWER       WAKE

@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.7
+- **Phantom Enter Elimination**: Disabled `DPAD_CENTER` keycodes in `uinput-goodix.kl` to prevent accidental folder/app launching when touching the fingerprint sensor on unlocked screen.
+- **Biometric Cleanliness**: Ensured Goodix sensor inputs are reserved exclusively for authentication services without interfering with launcher navigation.
+
 ## v2.6
 - **Zero-Reboot Hot-Reload Engine**: Live module synchronization into `/data/adb/modules/` during Magisk installation.
 - **On-the-Fly Tweaks Apply**: Instant background application of system tuning without requiring device reboot.
