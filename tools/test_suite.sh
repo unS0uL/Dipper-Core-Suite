@@ -244,8 +244,14 @@ test_assert "Live Toggle: iOS mode sets 350ms input_boost_ms" \
     "[ \"$(cat /sys/module/cpu_boost/parameters/input_boost_ms)\" = \"350\" ]"
 test_assert "Live Toggle: iOS mode unthrottles cpuset to 0-7" \
     "[ \"$(cat /dev/cpuset/restricted/cpus)\" = \"0-7\" ]"
+test_assert "Live Toggle: iOS mode unthrottles foreground cpuset to 0-7" \
+    "[ \"$(cat /dev/cpuset/foreground/cpus)\" = \"0-7\" ]"
 test_assert "Live Toggle: iOS mode sets schedtune.boost to 25" \
     "[ \"$(cat /dev/stune/top-app/schedtune.boost)\" = \"25\" ]"
+test_assert "Live Toggle: iOS mode sets foreground schedtune.boost to 15" \
+    "[ \"$(cat /dev/stune/foreground/schedtune.boost)\" = \"15\" ]"
+test_assert "Live Toggle: iOS mode sets cpubw min_freq to 4577" \
+    "[ \"$(cat /sys/class/devfreq/soc:qcom,cpubw/min_freq)\" = \"4577\" ]"
 test_assert "Live Toggle: iOS mode sets GPU min_pwrlevel to 5 (342 MHz)" \
     "[ \"$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel)\" = \"5\" ]"
 
@@ -259,6 +265,8 @@ test_assert "Live Toggle: Android mode sets 250ms input_boost_ms" \
     "[ \"$(cat /sys/module/cpu_boost/parameters/input_boost_ms)\" = \"250\" ]"
 test_assert "Live Toggle: Android mode sets schedtune.boost to 25" \
     "[ \"$(cat /dev/stune/top-app/schedtune.boost)\" = \"25\" ]"
+test_assert "Live Toggle: Android mode sets foreground schedtune.boost to 20" \
+    "[ \"$(cat /dev/stune/foreground/schedtune.boost)\" = \"20\" ]"
 
 sh $MODDIR/scripts/toggle_scroll_profile.sh disable
 sleep 0.5
@@ -267,6 +275,10 @@ sleep 0.5
 . "$MODDIR/scroll_stock.conf"
 test_assert "Live Toggle: Disable restores stock schedtune.boost" \
     "[ \"$(cat /dev/stune/top-app/schedtune.boost)\" = \"$SCHEDTUNE_BOOST\" ]"
+test_assert "Live Toggle: Disable restores stock foreground schedtune.boost" \
+    "[ \"$(cat /dev/stune/foreground/schedtune.boost)\" = \"${STOCK_FOREGROUND_BOOST:-0}\" ]"
+test_assert "Live Toggle: Disable restores stock cpubw min_freq" \
+    "[ \"$(cat /sys/class/devfreq/soc:qcom,cpubw/min_freq)\" = \"${STOCK_CPUBW_MIN:-2288}\" ]"
 test_assert "Live Toggle: Disable restores stock down_rate_limit" \
     "[ \"$(cat /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us)\" = \"$POLICY4_DOWN_RATE\" ]"
 test_assert "Live Toggle: Disable restores stock input_boost_ms" \
@@ -275,6 +287,8 @@ test_assert "Live Toggle: Disable restores stock GPU min_pwrlevel" \
     "[ \"$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel)\" = \"$STOCK_GPU_MIN\" ]"
 test_assert "Live Toggle: Disable restores stock restricted cpus" \
     "[ \"$(cat /dev/cpuset/restricted/cpus)\" = \"$STOCK_RESTRICTED_CPUS\" ]"
+test_assert "Live Toggle: Disable restores stock foreground cpus" \
+    "[ \"$(cat /dev/cpuset/foreground/cpus)\" = \"${STOCK_FOREGROUND_CPUS:-0-3,6-7}\" ]"
 
 sh $MODDIR/scripts/toggle_scroll_profile.sh enable ios
 sleep 0.5

@@ -33,27 +33,35 @@ ANIMATOR_DURATION="$(settings get global animator_duration_scale 2>/dev/null)"
 STOCK_GPU_MIN="$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null)"
 STOCK_GPU_DEF="$(cat /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null)"
 STOCK_RESTRICTED_CPUS="$(cat /dev/cpuset/restricted/cpus 2>/dev/null)"
+STOCK_FOREGROUND_CPUS="$(cat /dev/cpuset/foreground/cpus 2>/dev/null)"
+STOCK_FOREGROUND_BOOST="$(cat /dev/stune/foreground/schedtune.boost 2>/dev/null)"
+STOCK_CPUBW_MIN="$(cat /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null)"
 STOCK_CONF
     fi
 }
 
 apply_core_unrestrict() {
-    # Ensure background/restricted throttling never locks SystemUI to Little cores (0-3)
+    # Ensure background/restricted throttling never locks threads to Little cores (0-3)
     echo "0-7" > /dev/cpuset/restricted/cpus 2>/dev/null
 
-    # Move SystemUI & RenderThread to top-app and priority cores
+    # Unthrottle foreground cpuset to all 8 cores (Android 14 SystemUI runs in /foreground)
+    echo "0-7" > /dev/cpuset/foreground/cpus 2>/dev/null
+
+    # Assign SystemUI to top-app and unthrottle thread affinities across all 8 cores
     pid=$(pidof com.android.systemui 2>/dev/null)
     if [ -n "$pid" ]; then
         echo "$pid" > /dev/cpuset/top-app/cgroup.procs 2>/dev/null
-        taskset -p f0 "$pid" >/dev/null 2>&1 || taskset -p 90 "$pid" >/dev/null 2>&1 || taskset -p ff "$pid" >/dev/null 2>&1
+        taskset -p ff "$pid" >/dev/null 2>&1
+        renice -n -10 -p "$pid" >/dev/null 2>&1
         for f in /proc/"$pid"/task/*/comm; do
             [ -r "$f" ] || continue
+            tid="${f#/proc/"$pid"/task/}"
+            tid="${tid%/comm}"
+            taskset -p ff "$tid" >/dev/null 2>&1
             read -r comm < "$f" 2>/dev/null
             case "$comm" in
-                *Render*|*systemui*)
-                    tid="${f#/proc/"$pid"/task/}"
-                    tid="${tid%/comm}"
-                    taskset -p f0 "$tid" >/dev/null 2>&1 || taskset -p 90 "$tid" >/dev/null 2>&1 || taskset -p ff "$tid" >/dev/null 2>&1
+                *Render*|*wmshell*|*systemui*)
+                    renice -n -10 -p "$tid" >/dev/null 2>&1
                     ;;
             esac
         done
@@ -93,8 +101,12 @@ apply_ios_profile() {
     echo 5 > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null
     echo 5 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null
 
-    # 8. Top-App Priority Boost
+    # 8. Top-App & Foreground Priority Boost (SystemUI and compositor run in foreground)
     echo 25 > /dev/stune/top-app/schedtune.boost 2>/dev/null
+    echo 15 > /dev/stune/foreground/schedtune.boost 2>/dev/null
+
+    # 9. Elevate DDR memory bus floor to prevent cache-stall drops during notification traversal
+    echo 4577 > /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
 
     echo "MODE=ios" > "$CONF_FILE"
 }
@@ -134,6 +146,10 @@ apply_android_profile() {
 
     # 8. High Schedtune Boost
     echo 25 > /dev/stune/top-app/schedtune.boost 2>/dev/null
+    echo 20 > /dev/stune/foreground/schedtune.boost 2>/dev/null
+
+    # 9. Elevate DDR memory bus floor
+    echo 4577 > /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
 
     echo "MODE=android" > "$CONF_FILE"
 }
@@ -162,8 +178,14 @@ restore_stock() {
     [ -z "$STOCK_GPU_MIN" ] && STOCK_GPU_MIN="6"
     [ -z "$STOCK_GPU_DEF" ] && STOCK_GPU_DEF="6"
     [ -z "$STOCK_RESTRICTED_CPUS" ] && STOCK_RESTRICTED_CPUS="0-3"
+    [ -z "$STOCK_FOREGROUND_CPUS" ] && STOCK_FOREGROUND_CPUS="0-3,6-7"
+    [ -z "$STOCK_FOREGROUND_BOOST" ] && STOCK_FOREGROUND_BOOST="0"
+    [ -z "$STOCK_CPUBW_MIN" ] && STOCK_CPUBW_MIN="2288"
 
     # Restore in exact reverse order
+    echo "$STOCK_CPUBW_MIN" > /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
+    echo "$STOCK_FOREGROUND_BOOST" > /dev/stune/foreground/schedtune.boost 2>/dev/null
+    echo "$STOCK_FOREGROUND_CPUS" > /dev/cpuset/foreground/cpus 2>/dev/null
     echo "$STOCK_GPU_MIN" > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null
     echo "$STOCK_GPU_DEF" > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null
     echo "$SCHEDTUNE_BOOST" > /dev/stune/top-app/schedtune.boost 2>/dev/null
@@ -189,11 +211,21 @@ restore_stock() {
     if [ -n "$pid" ]; then
         echo "$pid" > /dev/cpuset/top-app/cgroup.procs 2>/dev/null
         taskset -p ff "$pid" >/dev/null 2>&1
+        renice -n 0 -p "$pid" >/dev/null 2>&1
         for f in /proc/"$pid"/task/*/comm; do
             [ -r "$f" ] || continue
             tid="${f#/proc/"$pid"/task/}"
             tid="${tid%/comm}"
             taskset -p ff "$tid" >/dev/null 2>&1
+            read -r comm < "$f" 2>/dev/null
+            case "$comm" in
+                *Render*|*wmshell*)
+                    renice -n -4 -p "$tid" >/dev/null 2>&1
+                    ;;
+                *)
+                    renice -n 0 -p "$tid" >/dev/null 2>&1
+                    ;;
+            esac
         done
     fi
 

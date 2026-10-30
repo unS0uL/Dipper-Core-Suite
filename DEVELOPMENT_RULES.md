@@ -129,3 +129,24 @@
 5. **Глобальная превентивная ревизия (Global Self-Audit):**
    - Агент обязан проверить **все остальные скрипты и модули репозитория** на предмет наличия этого же анти-паттерна и устранить его превентивно во всём проекте.
 
+---
+
+### 4.2. База кодифицированных законов и уроков проекта (Codified Engineering Laws)
+
+#### Закон 1: Изоляция Cgroups и планирование потоков SystemUI в Android 12-14 (EAS & Thread Scheduling)
+- **Анти-паттерн (Запрещено):**
+  - Жестко привязывать процесс SystemUI и `RenderThread` к Big-ядрам (`taskset -p f0` / `0xf0`).
+  - Предполагать, что SystemUI постоянно удерживается в cgroup `/dev/cpuset/top-app` или `/dev/stune/top-app`.
+- **Индустриальная реальность AOSP / Linux EAS:**
+  - Android ActivityManager (`ProcessList.setProcessGroup()`) перемещает SystemUI в cgroup `/foreground` (`THREAD_GROUP_DEFAULT`).
+  - В базовой конфигурации ядра SDM845 группа `/dev/cpuset/foreground/cpus` ограничена `0-3,6-7` (ядра 4 и 5 полностью исключены), а `/dev/stune/foreground/schedtune.boost` равен `0`.
+  - При применении маски `taskset -p f0` (ядра 4-7) ядро Linux накладывает маску на cpuset, в результате чего SystemUI и RenderThread оказывались заперты **только на двух ядрах (6 и 7)**.
+  - На этих же двух ядрах работают `surfaceflinger`, `RenderEngine`, Audio HAL и аппаратные IRQ. В результате при скролле шторки с 2000+ RenderNodes возникали тяжелые микрофризы (slow UI thread > 40ms, jank > 25%).
+- **Обязательный стандарт проекта:**
+  1. Разблокировать все 8 ядер для `/dev/cpuset/foreground/cpus` (`0-7`).
+  2. Устанавливать положительный boost для `/dev/stune/foreground/schedtune.boost` (15 для iOS, 20 для Android режима).
+  3. Для `com.android.systemui` и всех его дочерних потоков назначать полное несвязанное аффинити `taskset -p ff` (`0-7`), позволяя алгоритму Energy Aware Scheduling (EAS) динамически мигрировать задачи.
+  4. Повышать статический приоритет UI thread и RenderThread (`renice -n -10`), предотвращая вытеснение фоновыми сервисами (GMS, sync, dexopt).
+  5. Для предотвращения задержек обхода дерева RenderNode в памяти приподнимать нижний порог пропускной способности шины памяти `/sys/class/devfreq/soc:qcom,cpubw/min_freq` до 4577 MB/s.
+  6. При отключении (`disable`) обязательно возвращать `cpuset/foreground`, `schedtune/foreground`, `cpubw/min_freq` и приоритеты в исходное состояние стока.
+
