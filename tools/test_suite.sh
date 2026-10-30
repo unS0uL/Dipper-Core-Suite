@@ -54,6 +54,9 @@ test_assert "Webroot index.html exists and is readable (0644+)" \
 test_assert "Webroot js/kernelsu.js exists and is readable" \
     "[ -r $MODDIR/webroot/js/kernelsu.js ]"
 
+test_assert "Webroot config.json version matches module.prop version" \
+    "[ \"$(grep '^version=' $MODDIR/module.prop | cut -d= -f2)\" = \"$(grep -o '\"version\":\"[^\"]*\"' $MODDIR/webroot/config.json | cut -d: -f2 | tr -d '\"')\" ]"
+
 test_assert "Action script action.sh passes non-empty module id" \
     "grep -q 'id \"\$MODID\"' $MODDIR/action.sh"
 
@@ -113,6 +116,9 @@ test_assert "Audio HAL (android.hardware.audio.service) is responsive" \
 
 test_assert "Audioserver is running" \
     "pgrep -f 'audioserver' >/dev/null"
+
+test_assert "audio_watchdog.sh maintains active PID file in /dev/" \
+    "[ -f /dev/dipper_audio_watchdog.pid ] && [ -d /proc/\"$(cat /dev/dipper_audio_watchdog.pid 2>/dev/null)\" ]"
 
 test_assert "toggle_watchdog.sh status outputs enabled or disabled" \
     "sh $MODDIR/scripts/toggle_watchdog.sh status | grep -qE '^(enabled|disabled)$'"

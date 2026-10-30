@@ -20,6 +20,7 @@ case "$ACTION" in
         ;;
     disable)
         pkill -9 -f "audio_watchdog.sh" 2>/dev/null
+        rm -f /dev/dipper_audio_watchdog.pid 2>/dev/null
         echo "disabled"
         ;;
     status)

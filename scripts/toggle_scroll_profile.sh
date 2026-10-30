@@ -228,6 +228,7 @@ case "$ACTION" in
         if [ -f "$CONF_FILE" ]; then
             # shellcheck source=/dev/null
             . "$CONF_FILE"
+            [ -z "$MODE" ] && MODE="ios"
             echo "enabled:$MODE"
         else
             echo "disabled"

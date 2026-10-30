@@ -20,17 +20,8 @@ set_perm "$MODPATH/action.sh" 0 0 0755
 set_perm "$MODPATH/audio_watchdog.sh" 0 0 0755
 chmod 755 /data/adb 2>/dev/null
 
-ui_print "- Creating boot script link in service.d..."
-mkdir -p /data/adb/service.d
-cat << 'RUNNER' > /data/adb/service.d/99-dipper-core.sh
-#!/system/bin/sh
-MODDIR=/data/adb/modules/dipper_core_suite
-if [ -d "$MODDIR" ]; then
-    sh $MODDIR/service.sh &
-    nohup sh $MODDIR/audio_watchdog.sh >/dev/null 2>&1 &
-fi
-RUNNER
-chmod 755 /data/adb/service.d/99-dipper-core.sh
+# Clean up legacy service.d runner if present
+rm -f /data/adb/service.d/99-dipper-core.sh 2>/dev/null
 
 # Hot-Reload Live Apply (Zero-Reboot update engine)
 LIVE_MODPATH="/data/adb/modules/dipper_core_suite"

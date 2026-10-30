@@ -2,6 +2,16 @@
 # Audio Routing & Ringer Watchdog by unS0uL
 # Runs in background, monitors audio mute/routing state, and automatically recovers audio without reboot
 
+PIDFILE="/dev/dipper_audio_watchdog.pid"
+if [ -f "$PIDFILE" ]; then
+    old_pid=$(cat "$PIDFILE" 2>/dev/null)
+    if [ -n "$old_pid" ] && [ -d "/proc/$old_pid" ]; then
+        exit 0
+    fi
+fi
+echo "$$" > "$PIDFILE"
+trap 'rm -f "$PIDFILE" 2>/dev/null; exit 0' EXIT INT TERM
+
 last_mode=""
 log -p i -t "DipperAudioWatchdog" "Started audio watchdog daemon"
 
