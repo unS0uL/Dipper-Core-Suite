@@ -7,7 +7,7 @@ case "$ACTION" in
     enable)
         # 1. Unmask Goodix HW IRQ in kernel driver (gf_spi)
         chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null
-        echo -n 0 > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null
+        printf '0' > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null
         chmod 0444 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null
 
         # 2. Neutralize buggy XiaomiPocketMode service components
@@ -41,7 +41,7 @@ case "$ACTION" in
 
         # 1 (reversed). Mask HW IRQ in kernel and restore default read-write permissions
         chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null
-        echo -n 1 > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null
+        printf '1' > /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null
         chmod 0644 /sys/devices/platform/soc/soc:fingerprint_goodix/proximity_state 2>/dev/null
 
         # 4. Restart Biometrics HAL cleanly

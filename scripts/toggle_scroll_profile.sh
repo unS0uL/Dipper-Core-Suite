@@ -9,8 +9,9 @@
 ACTION="$1"
 MODE="$2"
 
-CONF_FILE="/data/adb/modules/dipper_core_suite/scroll_profile.conf"
-BACKUP_FILE="/data/adb/modules/dipper_core_suite/scroll_stock.conf"
+MODDIR=${0%/*}/..
+CONF_FILE="$MODDIR/scroll_profile.conf"
+BACKUP_FILE="$MODDIR/scroll_stock.conf"
 
 save_stock() {
     if [ ! -f "$BACKUP_FILE" ]; then
@@ -45,12 +46,12 @@ apply_core_unrestrict() {
     if [ -n "$pid" ]; then
         echo "$pid" > /dev/cpuset/top-app/cgroup.procs 2>/dev/null
         taskset -p f0 "$pid" >/dev/null 2>&1 || taskset -p 90 "$pid" >/dev/null 2>&1 || taskset -p ff "$pid" >/dev/null 2>&1
-        for f in /proc/$pid/task/*/comm; do
+        for f in /proc/"$pid"/task/*/comm; do
             [ -r "$f" ] || continue
             read -r comm < "$f" 2>/dev/null
             case "$comm" in
                 *Render*|*systemui*)
-                    tid="${f#/proc/$pid/task/}"
+                    tid="${f#/proc/"$pid"/task/}"
                     tid="${tid%/comm}"
                     taskset -p f0 "$tid" >/dev/null 2>&1 || taskset -p 90 "$tid" >/dev/null 2>&1 || taskset -p ff "$tid" >/dev/null 2>&1
                     ;;
@@ -139,6 +140,7 @@ apply_android_profile() {
 
 restore_stock() {
     if [ -f "$BACKUP_FILE" ]; then
+        # shellcheck source=/dev/null
         . "$BACKUP_FILE"
     fi
 
@@ -218,6 +220,7 @@ case "$ACTION" in
         ;;
     status)
         if [ -f "$CONF_FILE" ]; then
+            # shellcheck source=/dev/null
             . "$CONF_FILE"
             echo "enabled:$MODE"
         else

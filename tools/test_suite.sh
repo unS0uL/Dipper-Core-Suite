@@ -91,6 +91,12 @@ test_assert "audio_effects.xml is actively mounted without hardware AEC" \
 test_assert "Active audio_effects.xml does NOT declare acoustic_echo_canceler in pre_processing" \
     "! grep -A 5 'stream type=\"voice_communication\"' /vendor/etc/audio_effects.xml | grep -q 'apply effect=\"aec\"'"
 
+test_assert "Active /vendor/etc/audio_effects.xml has vendor_configs_file SELinux label" \
+    "ls -Z /vendor/etc/audio_effects.xml | grep -q 'vendor_configs_file'"
+
+test_assert "toggle_aec.sh status outputs enabled or disabled" \
+    "sh $MODDIR/scripts/toggle_aec.sh status | grep -qE '^(enabled|disabled)$'"
+
 # ------------------------------------------------------------------------------
 # 4. FEATURE 3: AUDIO RINGER WATCHDOG & RECOVERY
 # ------------------------------------------------------------------------------
@@ -105,6 +111,9 @@ test_assert "Audio HAL (android.hardware.audio.service) is responsive" \
 test_assert "Audioserver is running" \
     "pgrep -f 'audioserver' >/dev/null"
 
+test_assert "toggle_watchdog.sh status outputs enabled or disabled" \
+    "sh $MODDIR/scripts/toggle_watchdog.sh status | grep -qE '^(enabled|disabled)$'"
+
 # ------------------------------------------------------------------------------
 # 5. FEATURE 4: STATSD & BATTERY OPTIMIZER
 # ------------------------------------------------------------------------------
@@ -118,6 +127,9 @@ test_assert "Statsd logging socket /dev/socket/statsdw is present and writable" 
 
 test_assert "System load average is healthy (< 1.5)" \
     "[ \"$(awk '{print ($1 < 2.5) ? 1 : 0}' /proc/loadavg)\" = \"1\" ]"
+
+test_assert "toggle_statsd.sh status outputs enabled or disabled" \
+    "sh $MODDIR/scripts/toggle_statsd.sh status | grep -qE '^(enabled|disabled)$'"
 
 # ------------------------------------------------------------------------------
 # 6. FEATURE 5: KINEMATIC & TOUCH SCROLL PROFILES

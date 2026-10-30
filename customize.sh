@@ -1,3 +1,6 @@
+#!/system/bin/sh
+# shellcheck shell=sh
+# shellcheck disable=SC2034
 SKIPUNZIP=0
 
 ui_print "****************************************"
