@@ -8,4 +8,5 @@ Thumbs.db
 # Temporary artifacts
 *.log
 *.tmp
+*.zip
 scroll_stock.conf

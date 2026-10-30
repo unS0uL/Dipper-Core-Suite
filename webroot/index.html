@@ -355,6 +355,24 @@
     </div>
   </div>
 
+  <!-- 6. Standalone Dialer Battery Optimizer -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Standalone Dialer Optimizer</div>
+      <label class="switch">
+        <input type="checkbox" id="toggle-dialer" onchange="toggleDialer(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="card-desc">
+      Guardedly disables duplicate AOSP dialer to stop background sync/wakeups only if another dialer (e.g. Google Phone) is verified default.
+    </div>
+    <div class="switch-row">
+      <span class="card-desc">Optimizer Status:</span>
+      <span id="dialer-status" class="status-tag status-inactive">Checking...</span>
+    </div>
+  </div>
+
   <div class="footer">
     Target: crDroid 10.10 &bull; Android 14 (Qualcomm SDM845)<br>
     Instant live toggles without rebooting
@@ -414,6 +432,20 @@
         }
 
         renderModeButtons(scrollMode, false);
+
+        // 6. Standalone Dialer check
+        const resDialer = await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_dialer.sh status");
+        const dialerOut = resDialer.stdout.trim();
+        const aospDisabled = dialerOut.includes("aosp_state=disabled");
+        document.getElementById("toggle-dialer").checked = aospDisabled;
+        const dialerEl = document.getElementById("dialer-status");
+        if (aospDisabled) {
+          dialerEl.textContent = "Optimized (AOSP Silent)";
+          dialerEl.className = "status-tag status-active";
+        } else {
+          dialerEl.textContent = "Default/Stock Enabled";
+          dialerEl.className = "status-tag status-inactive";
+        }
       } catch (e) {
         console.error(e);
       }
@@ -531,6 +563,18 @@
       } else {
         await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_statsd.sh disable");
         toast("Statsd stopped");
+      }
+      setTimeout(updateStatus, 800);
+    };
+
+    // Toggle Standalone Dialer Optimizer
+    window.toggleDialer = async function(enable) {
+      if (enable) {
+        await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_dialer.sh auto");
+        toast("Dialer optimizer applied");
+      } else {
+        await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_dialer.sh disable");
+        toast("AOSP dialer restored");
       }
       setTimeout(updateStatus, 800);
     };

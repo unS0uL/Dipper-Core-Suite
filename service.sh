@@ -19,3 +19,6 @@ sh "$MODDIR/scripts/toggle_watchdog.sh" enable
 # 4. Start Kinematic & Touch Performance Profile (default: iOS physics):
 sh "$MODDIR/scripts/toggle_scroll_profile.sh" enable ios
 
+# 5. Safe Standalone Dialer Optimizer (disables duplicate AOSP dialer only if another dialer is default):
+sh "$MODDIR/scripts/toggle_dialer.sh" auto
+

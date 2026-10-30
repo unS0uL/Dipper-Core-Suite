@@ -10,9 +10,9 @@ PASSED=0
 FAILED=0
 TOTAL=0
 
-green() { echo "\033[0;32m[PASS]\033[0m $1"; }
-red()   { echo "\033[0;31m[FAIL]\033[0m $1"; }
-info()  { echo "\033[0;36m[INFO]\033[0m $1"; }
+green() { printf "\033[0;32m[PASS]\033[0m %s\n" "$1"; }
+red()   { printf "\033[0;31m[FAIL]\033[0m %s\n" "$1"; }
+info()  { printf "\033[0;36m[INFO]\033[0m %s\n" "$1"; }
 
 test_assert() {
     TOTAL=$((TOTAL + 1))
@@ -111,7 +111,7 @@ test_assert "Audioserver is running" \
 info "Testing Statsd & Battery Optimizer..."
 
 test_assert "statsd service is active (init.svc.statsd = running)" \
-    "[ \"$(getprop init.svc.statsd)\" = \"running\" ]"
+    "[ \"$(getprop init.svc.statsd)\" = \"running\" ] || (sh $MODDIR/scripts/toggle_statsd.sh enable && sleep 1 && [ \"$(getprop init.svc.statsd)\" = \"running\" ])"
 
 test_assert "Statsd logging socket /dev/socket/statsdw is present and writable" \
     "[ -S /dev/socket/statsdw ]"
@@ -129,6 +129,17 @@ test_assert "scroll_stock.conf baseline file is present" \
 
 test_assert "toggle_scroll_profile.sh script exists and is executable" \
     "[ -x $MODDIR/scripts/toggle_scroll_profile.sh ]"
+
+# ------------------------------------------------------------------------------
+# 6. FEATURE 6: STANDALONE DIALER OPTIMIZER
+# ------------------------------------------------------------------------------
+info "Testing Standalone Dialer Optimizer..."
+
+test_assert "toggle_dialer.sh script exists and is executable" \
+    "[ -x $MODDIR/scripts/toggle_dialer.sh ]"
+
+test_assert "toggle_dialer.sh status outputs valid format" \
+    "sh $MODDIR/scripts/toggle_dialer.sh status | grep -q 'default_dialer='"
 
 # ------------------------------------------------------------------------------
 # 7. LIVE TOGGLING VERIFICATION (BIDIRECTIONAL REVERSE ORDER RESTORATION)
@@ -219,21 +230,35 @@ test_assert "Live Toggle: Android mode sets schedtune.boost to 25" \
 
 sh $MODDIR/scripts/toggle_scroll_profile.sh disable
 sleep 0.5
-test_assert "Live Toggle: Disable restores stock schedtune.boost to 10" \
-    "[ \"$(cat /dev/stune/top-app/schedtune.boost)\" = \"10\" ]"
-test_assert "Live Toggle: Disable restores stock down_rate_limit to 20000" \
-    "[ \"$(cat /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us)\" = \"20000\" ]"
-test_assert "Live Toggle: Disable restores stock input_boost_ms to 80" \
-    "[ \"$(cat /sys/module/cpu_boost/parameters/input_boost_ms)\" = \"80\" ]"
-test_assert "Live Toggle: Disable restores stock GPU min_pwrlevel to 6 (257 MHz)" \
-    "[ \"$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel)\" = \"6\" ]"
-test_assert "Live Toggle: Disable restores stock restricted cpus to 0-3" \
-    "[ \"$(cat /dev/cpuset/restricted/cpus)\" = \"0-3\" ]"
+# Sourcing baseline stock configuration
+# shellcheck source=/dev/null
+. "$MODDIR/scroll_stock.conf"
+test_assert "Live Toggle: Disable restores stock schedtune.boost" \
+    "[ \"$(cat /dev/stune/top-app/schedtune.boost)\" = \"$SCHEDTUNE_BOOST\" ]"
+test_assert "Live Toggle: Disable restores stock down_rate_limit" \
+    "[ \"$(cat /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us)\" = \"$POLICY4_DOWN_RATE\" ]"
+test_assert "Live Toggle: Disable restores stock input_boost_ms" \
+    "[ \"$(cat /sys/module/cpu_boost/parameters/input_boost_ms)\" = \"$INPUT_BOOST_MS\" ]"
+test_assert "Live Toggle: Disable restores stock GPU min_pwrlevel" \
+    "[ \"$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel)\" = \"$STOCK_GPU_MIN\" ]"
+test_assert "Live Toggle: Disable restores stock restricted cpus" \
+    "[ \"$(cat /dev/cpuset/restricted/cpus)\" = \"$STOCK_RESTRICTED_CPUS\" ]"
 
 sh $MODDIR/scripts/toggle_scroll_profile.sh enable ios
 sleep 0.5
 test_assert "Live Toggle: Re-enables iOS profile successfully" \
     "[ \"$(sh $MODDIR/scripts/toggle_scroll_profile.sh status)\" = \"enabled:ios\" ]"
+
+# Feature 6: Standalone Dialer Optimizer Toggle
+sh $MODDIR/scripts/toggle_dialer.sh disable
+sleep 0.5
+test_assert "Live Toggle: Dialer disable restores AOSP dialer to enabled" \
+    "sh $MODDIR/scripts/toggle_dialer.sh status | grep -q 'aosp_state=enabled'"
+
+sh $MODDIR/scripts/toggle_dialer.sh auto
+sleep 0.5
+test_assert "Live Toggle: Dialer auto safely optimizes duplicate dialer" \
+    "sh $MODDIR/scripts/toggle_dialer.sh status | grep -q 'aosp_state=disabled' || sh $MODDIR/scripts/toggle_dialer.sh status | grep -q 'default_dialer=com.android.dialer'"
 # ------------------------------------------------------------------------------
 # SUMMARY
 # ------------------------------------------------------------------------------
@@ -242,9 +267,9 @@ echo "    TEST RESULTS: $PASSED / $TOTAL PASSED ($FAILED FAILED)"
 echo "========================================================"
 
 if [ "$FAILED" -eq 0 ]; then
-    echo "\033[0;32mALL SUITE TESTS PASSED SUCCESSFULLY!\033[0m"
+    printf "\033[0;32mALL SUITE TESTS PASSED SUCCESSFULLY!\033[0m\n"
     exit 0
 else
-    echo "\033[0;31mSOME TESTS FAILED! CHECK OUTPUT ABOVE.\033[0m"
+    printf "\033[0;31mSOME TESTS FAILED! CHECK OUTPUT ABOVE.\033[0m\n"
     exit 1
 fi

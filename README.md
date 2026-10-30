@@ -36,6 +36,7 @@ Access the dashboard anytime:
 | **VoIP AEC Fallback** | Remote party hears loud echo during VoIP speakerphone calls | Disables broken hardware AEC in `audio_effects.xml`, enabling clean app AEC3 | Yes (Restores stock XML) |
 | **Audio Ringer Watchdog** | Sound permanently disappears after toggling ringer presets | Background daemon detects transition and auto-restores Audio HAL within 1s | Yes |
 | **Kinematic Scroll Engine** | Notification shade micro-jank & kinetic fling tail jitter | Unified Core Unrestrict (Pixel 8-core SystemUI/RenderThread affinity), 60Hz VSYNC decay damping (60ms/33.3ms), 342MHz GPU floor, & 350ms fling boost | Yes (iOS Inertia vs Android Snappy) |
+| **Standalone Dialer Optimizer** | Duplicate AOSP dialer battery drain when Google Phone is primary | Guardedly mutes dormant AOSP dialer only when an alternative dialer is confirmed default; never breaks single-dialer setups | Yes (Stock Reversion) |
 
 ---
 

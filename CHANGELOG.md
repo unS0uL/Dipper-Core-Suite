@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.8
+- **Standalone Dialer Battery Optimizer**: Guarded optimization disabling duplicate AOSP dialer (`com.android.dialer`) background wakelocks and sync loops when Google Phone or another dialer is set as default.
+- **Telephony Safety Guard**: Multi-layered pre-flight check guarantees `com.android.dialer` is never touched if it is the only dialer or the active default dialer, preventing emergency or normal call failures.
+- **Interactive WebUI Toggle**: Added live bidirectional toggle card in WebUI for real-time control with 0ms optimistic updates.
+
 ## v2.7
 - **Phantom Enter Elimination**: Disabled `DPAD_CENTER` keycodes in `uinput-goodix.kl` to prevent accidental folder/app launching when touching the fingerprint sensor on unlocked screen.
 - **Biometric Cleanliness**: Ensured Goodix sensor inputs are reserved exclusively for authentication services without interfering with launcher navigation.
