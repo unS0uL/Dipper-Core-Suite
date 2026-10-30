@@ -102,11 +102,15 @@ apply_ios_profile() {
     echo 5 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null
 
     # 8. Top-App & Foreground Priority Boost (SystemUI and compositor run in foreground)
+    chmod 0644 /dev/stune/top-app/schedtune.boost 2>/dev/null
     echo 25 > /dev/stune/top-app/schedtune.boost 2>/dev/null
+    chmod 0444 /dev/stune/top-app/schedtune.boost 2>/dev/null
     echo 15 > /dev/stune/foreground/schedtune.boost 2>/dev/null
 
     # 9. Elevate DDR memory bus floor to prevent cache-stall drops during notification traversal
+    chmod 0644 /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
     echo 4577 > /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
+    chmod 0444 /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
 
     echo "MODE=ios" > "$CONF_FILE"
 }
@@ -145,11 +149,15 @@ apply_android_profile() {
     echo 5 > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null
 
     # 8. High Schedtune Boost
+    chmod 0644 /dev/stune/top-app/schedtune.boost 2>/dev/null
     echo 25 > /dev/stune/top-app/schedtune.boost 2>/dev/null
+    chmod 0444 /dev/stune/top-app/schedtune.boost 2>/dev/null
     echo 20 > /dev/stune/foreground/schedtune.boost 2>/dev/null
 
     # 9. Elevate DDR memory bus floor
+    chmod 0644 /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
     echo 4577 > /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
+    chmod 0444 /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
 
     echo "MODE=android" > "$CONF_FILE"
 }
@@ -183,11 +191,13 @@ restore_stock() {
     [ -z "$STOCK_CPUBW_MIN" ] && STOCK_CPUBW_MIN="2288"
 
     # Restore in exact reverse order
+    chmod 0644 /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
     echo "$STOCK_CPUBW_MIN" > /sys/class/devfreq/soc:qcom,cpubw/min_freq 2>/dev/null
     echo "$STOCK_FOREGROUND_BOOST" > /dev/stune/foreground/schedtune.boost 2>/dev/null
     echo "$STOCK_FOREGROUND_CPUS" > /dev/cpuset/foreground/cpus 2>/dev/null
     echo "$STOCK_GPU_MIN" > /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null
     echo "$STOCK_GPU_DEF" > /sys/class/kgsl/kgsl-3d0/default_pwrlevel 2>/dev/null
+    chmod 0644 /dev/stune/top-app/schedtune.boost 2>/dev/null
     echo "$SCHEDTUNE_BOOST" > /dev/stune/top-app/schedtune.boost 2>/dev/null
     echo "$POLICY4_DOWN_RATE" > /sys/devices/system/cpu/cpufreq/policy4/schedutil/down_rate_limit_us 2>/dev/null
     echo "$POLICY0_DOWN_RATE" > /sys/devices/system/cpu/cpufreq/policy0/schedutil/down_rate_limit_us 2>/dev/null
