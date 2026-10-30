@@ -183,12 +183,18 @@ restore_stock() {
     echo "$INPUT_BOOST_MS" > /sys/module/cpu_boost/parameters/input_boost_ms 2>/dev/null
     echo "$INPUT_BOOST_FREQ" > /sys/module/cpu_boost/parameters/input_boost_freq 2>/dev/null
 
-    # Restore restricted cpuset and SystemUI process group
+    # Restore restricted cpuset and return SystemUI process to top-app with unthrottled affinity (0-7)
     echo "$STOCK_RESTRICTED_CPUS" > /dev/cpuset/restricted/cpus 2>/dev/null
     pid=$(pidof com.android.systemui 2>/dev/null)
     if [ -n "$pid" ]; then
-        echo "$pid" > /dev/cpuset/restricted/cgroup.procs 2>/dev/null
-        taskset -p f "$pid" 2>/dev/null
+        echo "$pid" > /dev/cpuset/top-app/cgroup.procs 2>/dev/null
+        taskset -p ff "$pid" >/dev/null 2>&1
+        for f in /proc/"$pid"/task/*/comm; do
+            [ -r "$f" ] || continue
+            tid="${f#/proc/"$pid"/task/}"
+            tid="${tid%/comm}"
+            taskset -p ff "$tid" >/dev/null 2>&1
+        done
     fi
 
     settings put global animator_duration_scale "$ANIMATOR_DURATION" 2>/dev/null

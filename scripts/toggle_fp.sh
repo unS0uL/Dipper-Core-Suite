@@ -3,6 +3,14 @@
 MODDIR=${0%/*}/..
 ACTION="$1"
 
+get_status() {
+    if grep -q "uinput-goodix.kl" /proc/mounts 2>/dev/null; then
+        echo "enabled"
+    else
+        echo "disabled"
+    fi
+}
+
 case "$ACTION" in
     enable)
         # 1. Unmask Goodix HW IRQ in kernel driver (gf_spi)
@@ -15,24 +23,34 @@ case "$ACTION" in
         pm disable org.lineageos.pocketmode/.PocketModeService 2>/dev/null
         pkill -9 -f org.lineageos.pocketmode 2>/dev/null
 
-        # 3. Mount active WAKE keylayout and IDC
-        if ! grep -q "uinput-goodix.kl" /proc/mounts; then
+        # 3. Mount active WAKE keylayout and IDC with clean SELinux labels
+        chcon u:object_r:system_file:s0 "$MODDIR/system/usr/keylayout/uinput-goodix.kl" 2>/dev/null
+        if ! grep -q "uinput-goodix.kl" /proc/mounts 2>/dev/null; then
             mount -o bind "$MODDIR/system/usr/keylayout/uinput-goodix.kl" /system/usr/keylayout/uinput-goodix.kl 2>/dev/null
         fi
-        if [ -f "$MODDIR/system/usr/idc/uinput-goodix.idc" ] && ! grep -q "uinput-goodix.idc" /proc/mounts; then
-            mount -o bind "$MODDIR/system/usr/idc/uinput-goodix.idc" /system/usr/idc/uinput-goodix.idc 2>/dev/null
+
+        if [ -f "$MODDIR/system/usr/idc/uinput-goodix.idc" ]; then
+            chcon u:object_r:system_file:s0 "$MODDIR/system/usr/idc/uinput-goodix.idc" 2>/dev/null
+            if ! grep -q "uinput-goodix.idc" /proc/mounts 2>/dev/null; then
+                mount -o bind "$MODDIR/system/usr/idc/uinput-goodix.idc" /system/usr/idc/uinput-goodix.idc 2>/dev/null
+            fi
         fi
 
         # 4. Restart Biometrics HAL cleanly
         pkill -9 -f android.hardware.biometrics.fingerprint 2>/dev/null
+        echo "enabled"
         ;;
 
     disable)
         # REVERSE ORDER RESTORATION (Exact stock state):
 
         # 3 (reversed). Unmount keylayout and IDC first
-        umount -l /system/usr/keylayout/uinput-goodix.kl 2>/dev/null
-        umount -l /system/usr/idc/uinput-goodix.idc 2>/dev/null
+        if grep -q "uinput-goodix.kl" /proc/mounts 2>/dev/null; then
+            umount -l /system/usr/keylayout/uinput-goodix.kl 2>/dev/null
+        fi
+        if grep -q "uinput-goodix.idc" /proc/mounts 2>/dev/null; then
+            umount -l /system/usr/idc/uinput-goodix.idc 2>/dev/null
+        fi
 
         # 2 (reversed). Re-enable stock XiaomiPocketMode components
         pm enable org.lineageos.pocketmode/.BootCompletedReceiver 2>/dev/null
@@ -46,9 +64,15 @@ case "$ACTION" in
 
         # 4. Restart Biometrics HAL cleanly
         pkill -9 -f android.hardware.biometrics.fingerprint 2>/dev/null
+        echo "disabled"
         ;;
+
+    status)
+        get_status
+        ;;
+
     *)
-        echo "Usage: $0 {enable|disable}"
+        echo "Usage: $0 {enable|disable|status}"
         exit 1
         ;;
 esac

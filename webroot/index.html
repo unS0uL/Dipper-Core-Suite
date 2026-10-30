@@ -402,32 +402,32 @@
     async function updateStatus() {
       try {
         // 1. Fingerprint check
-        const resFP = await exec("grep -q 'uinput-goodix.kl' /proc/mounts && echo 1 || echo 0");
-        const fpActive = resFP.stdout.trim() === "1";
+        const resFP = await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_fp.sh status");
+        const fpActive = resFP.stdout.trim() === "enabled";
         document.getElementById("toggle-fp").checked = fpActive;
         const fpEl = document.getElementById("fp-status");
         fpEl.textContent = fpActive ? "Active" : "Disabled";
         fpEl.className = "status-tag " + (fpActive ? "status-active" : "status-inactive");
 
         // 2. VoIP Echo fix (AEC) check
-        const resAEC = await exec("grep -q 'audio_effects.xml' /proc/mounts && grep -q 'audio_effects_no_aec.xml' /proc/mounts && echo 1 || (diff -q /data/adb/modules/dipper_core_suite/system/vendor/etc/audio_effects.xml /data/adb/modules/dipper_core_suite/audio_effects_no_aec.xml >/dev/null 2>&1 && echo 1 || echo 0)");
-        const aecActive = resAEC.stdout.trim() === "1";
+        const resAEC = await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_aec.sh status");
+        const aecActive = resAEC.stdout.trim() === "enabled";
         document.getElementById("toggle-aec").checked = aecActive;
         const aecEl = document.getElementById("aec-status");
         aecEl.textContent = aecActive ? "Fixed (No Echo)" : "Stock (Default)";
         aecEl.className = "status-tag " + (aecActive ? "status-active" : "status-inactive");
 
         // 3. Audio Watchdog check
-        const resWd = await exec("pgrep -f 'audio_watchdog.sh' >/dev/null && echo 1 || echo 0");
-        const wdActive = resWd.stdout.trim() === "1";
+        const resWd = await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_watchdog.sh status");
+        const wdActive = resWd.stdout.trim() === "enabled";
         document.getElementById("toggle-watchdog").checked = wdActive;
         const wdEl = document.getElementById("watchdog-status");
         wdEl.textContent = wdActive ? "Auto Guard Active" : "Disabled";
         wdEl.className = "status-tag " + (wdActive ? "status-active" : "status-inactive");
 
         // 4. Statsd check
-        const resStatsd = await exec("getprop init.svc.statsd");
-        const statsdActive = resStatsd.stdout.trim() === "running";
+        const resStatsd = await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_statsd.sh status");
+        const statsdActive = resStatsd.stdout.trim() === "enabled";
         document.getElementById("toggle-statsd").checked = statsdActive;
         const statsdEl = document.getElementById("statsd-status");
         statsdEl.textContent = statsdActive ? "Running" : "Stopped";

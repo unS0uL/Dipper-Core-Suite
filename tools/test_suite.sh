@@ -80,6 +80,9 @@ test_assert "Buggy XiaomiPocketMode service component is disabled" \
 test_assert "Fingerprint HAL service is running (android.hardware.biometrics.fingerprint)" \
     "pgrep -f 'android.hardware.biometrics.fingerprint' >/dev/null"
 
+test_assert "toggle_fp.sh status outputs enabled or disabled" \
+    "sh $MODDIR/scripts/toggle_fp.sh status | grep -qE '^(enabled|disabled)$'"
+
 # ------------------------------------------------------------------------------
 # 3. FEATURE 2: VOIP AEC FALLBACK (ECHO FIX)
 # ------------------------------------------------------------------------------
@@ -271,6 +274,9 @@ sh $MODDIR/scripts/toggle_scroll_profile.sh enable ios
 sleep 0.5
 test_assert "Live Toggle: Re-enables iOS profile successfully" \
     "[ \"$(sh $MODDIR/scripts/toggle_scroll_profile.sh status)\" = \"enabled:ios\" ]"
+
+test_assert "Live Toggle: SystemUI is assigned to top-app cgroup" \
+    "grep \$(pidof com.android.systemui) /dev/cpuset/top-app/cgroup.procs >/dev/null 2>&1"
 
 # Feature 6: Standalone Dialer Optimizer Toggle
 sh $MODDIR/scripts/toggle_dialer.sh disable
