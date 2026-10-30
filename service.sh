@@ -22,3 +22,7 @@ sh "$MODDIR/scripts/toggle_scroll_profile.sh" enable ios
 # 5. Safe Standalone Dialer Optimizer (disables duplicate AOSP dialer only if another dialer is default):
 sh "$MODDIR/scripts/toggle_dialer.sh" auto
 
+# 6. Lockscreen Swipe-Up Bouncer Reliability Fix (prevents false touch rejection via optical proximity):
+sh "$MODDIR/scripts/toggle_keyguard_swipe.sh" enable
+
+

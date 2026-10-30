@@ -373,6 +373,24 @@
     </div>
   </div>
 
+  <!-- 7. Lockscreen Swipe Bouncer Fix -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Lockscreen Swipe Bouncer Fix</div>
+      <label class="switch">
+        <input type="checkbox" id="toggle-keyguard-swipe" onchange="toggleKeyguardSwipe(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="card-desc">
+      Prevents PIN/pattern keypad from collapsing after swipe-up due to false pocket detection by miscalibrated optical proximity sensor.
+    </div>
+    <div class="switch-row">
+      <span class="card-desc">Swipe Reliability:</span>
+      <span id="keyguard-status" class="status-tag status-inactive">Checking...</span>
+    </div>
+  </div>
+
   <div class="footer">
     Target: crDroid 10.10 &bull; Android 14 (Qualcomm SDM845)<br>
     Instant live toggles without rebooting
@@ -445,6 +463,19 @@
         } else {
           dialerEl.textContent = "Default/Stock Enabled";
           dialerEl.className = "status-tag status-inactive";
+        }
+
+        // 7. Lockscreen Swipe Bouncer check
+        const resKeyguard = await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_keyguard_swipe.sh status");
+        const keyguardActive = resKeyguard.stdout.trim() === "enabled";
+        document.getElementById("toggle-keyguard-swipe").checked = keyguardActive;
+        const keyguardEl = document.getElementById("keyguard-status");
+        if (keyguardActive) {
+          keyguardEl.textContent = "Reliable (Bouncer Guard)";
+          keyguardEl.className = "status-tag status-active";
+        } else {
+          keyguardEl.textContent = "Stock Sensitive";
+          keyguardEl.className = "status-tag status-inactive";
         }
       } catch (e) {
         console.error(e);
@@ -575,6 +606,18 @@
       } else {
         await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_dialer.sh disable");
         toast("AOSP dialer restored");
+      }
+      setTimeout(updateStatus, 800);
+    };
+
+    // Toggle Lockscreen Swipe Bouncer Reliability Fix
+    window.toggleKeyguardSwipe = async function(enable) {
+      if (enable) {
+        await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_keyguard_swipe.sh enable");
+        toast("Lockscreen swipe reliability enabled");
+      } else {
+        await exec("sh /data/adb/modules/dipper_core_suite/scripts/toggle_keyguard_swipe.sh disable");
+        toast("Stock falsing sensitivity restored");
       }
       setTimeout(updateStatus, 800);
     };

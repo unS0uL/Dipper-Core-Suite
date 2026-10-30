@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.9
+- **Lockscreen Swipe-Up Bouncer Reliability Fix**: Resolved annoying Keyguard PIN/Pattern bouncer collapse bug where keypad flashed for 200–300 ms and snapped back down to lockscreen.
+- **Root Cause Neutralization**: Neutralized AOSP `FalsingManager` / `ProximityClassifier` false rejection caused by optical proximity sensor (`ams AG tmd2725`) crosstalk / threshold miscalibration via `brightline_falsing_proximity_percent_covered_threshold`.
+- **Hardware Proximity Threshold Audit**: Audited TMD2725 hardware calibration in persist (`tmd2725_platform.prox.fac_cal`), proving optical crosstalk under protective glass caused proximity state to remain stuck at NEAR (`0.00 cm`).
+- **Interactive WebUI Toggle**: Added dedicated Card 7 in WebUI dashboard with instant live toggling and status tracking.
+- **Test Suite Expansion**: Added test cases for keyguard swipe bouncer controller, bringing comprehensive test suite to 60/60 passed (100%).
+
 ## v2.8
 - **Standalone Dialer Battery Optimizer**: Guarded optimization disabling duplicate AOSP dialer (`com.android.dialer`) background wakelocks and sync loops when Google Phone or another dialer is set as default.
 - **Telephony Safety Guard**: Multi-layered pre-flight check guarantees `com.android.dialer` is never touched if it is the only dialer or the active default dialer, preventing emergency or normal call failures.

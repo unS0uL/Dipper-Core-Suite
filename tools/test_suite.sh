@@ -142,7 +142,18 @@ test_assert "toggle_dialer.sh status outputs valid format" \
     "sh $MODDIR/scripts/toggle_dialer.sh status | grep -q 'default_dialer='"
 
 # ------------------------------------------------------------------------------
-# 7. LIVE TOGGLING VERIFICATION (BIDIRECTIONAL REVERSE ORDER RESTORATION)
+# 7. FEATURE 7: LOCKSCREEN SWIPE-UP BOUNCER FIX
+# ------------------------------------------------------------------------------
+info "Testing Lockscreen Swipe Bouncer Optimizer..."
+
+test_assert "toggle_keyguard_swipe.sh script exists and is executable" \
+    "[ -x $MODDIR/scripts/toggle_keyguard_swipe.sh ]"
+
+test_assert "toggle_keyguard_swipe.sh status outputs enabled or disabled" \
+    "sh $MODDIR/scripts/toggle_keyguard_swipe.sh status | grep -qE '^(enabled|disabled)$'"
+
+# ------------------------------------------------------------------------------
+# 8. LIVE TOGGLING VERIFICATION (BIDIRECTIONAL REVERSE ORDER RESTORATION)
 # ------------------------------------------------------------------------------
 info "Testing Full Bidirectional Toggling & Stock Reversion..."
 
@@ -259,6 +270,18 @@ sh $MODDIR/scripts/toggle_dialer.sh auto
 sleep 0.5
 test_assert "Live Toggle: Dialer auto safely optimizes duplicate dialer" \
     "sh $MODDIR/scripts/toggle_dialer.sh status | grep -q 'aosp_state=disabled' || sh $MODDIR/scripts/toggle_dialer.sh status | grep -q 'default_dialer=com.android.dialer'"
+
+# Feature 7: Lockscreen Swipe Bouncer Reliability Toggle
+sh $MODDIR/scripts/toggle_keyguard_swipe.sh disable
+sleep 0.5
+test_assert "Live Toggle: Keyguard swipe disable restores stock falsing config" \
+    "[ \"$(sh $MODDIR/scripts/toggle_keyguard_swipe.sh status)\" = \"disabled\" ]"
+
+sh $MODDIR/scripts/toggle_keyguard_swipe.sh enable
+sleep 0.5
+test_assert "Live Toggle: Keyguard swipe enable applies 2.0 threshold" \
+    "[ \"$(sh $MODDIR/scripts/toggle_keyguard_swipe.sh status)\" = \"enabled\" ] && [ \"$(device_config get systemui brightline_falsing_proximity_percent_covered_threshold 2>/dev/null | tr -d '\r\n ')\" = \"2.0\" ]"
+
 # ------------------------------------------------------------------------------
 # SUMMARY
 # ------------------------------------------------------------------------------
