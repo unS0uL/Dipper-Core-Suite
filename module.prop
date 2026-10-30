@@ -1,7 +1,7 @@
 id=dipper_core_suite
 name=Dipper Core Suite
-version=2.9
-versionCode=29
+version=3.0
+versionCode=30
 author=unS0uL
 description=All-in-One system optimizer for Xiaomi Mi 8 (dipper): Lockscreen swipe bouncer fix, Zero-Reboot Hot-Reload engine, Goodix fingerprint wake, Standalone Dialer optimizer, statsd battery fix, VoIP AEC fallback, Audio HAL recovery, Kinematic 60Hz Scroll, WebUI dashboard.
 updateJson=https://raw.githubusercontent.com/unS0uL/Dipper-Core-Suite/main/update.json

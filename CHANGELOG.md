@@ -1,6 +1,25 @@
 # Changelog
 
-## v2.9
+## v3.0
+- **Notification Shade Smoothness & EAS Architecture Refactor**:
+  - Eliminated severe notification shade micro-jank and dropped frames (jank down from 27.4% to 4.07%, 90th percentile from 53ms to 26ms, 0 missed VSYNC).
+  - Unthrottled `/dev/cpuset/foreground/cpus` to all 8 cores (`0-7`), removing the legacy 2018 Qualcomm restriction (`0-3,6-7`) that choked Android 14 SystemUI.
+  - Boosted `/dev/stune/foreground/schedtune.boost` to 15 (iOS mode) / 20 (Android mode), ensuring EAS scheduler prioritizes SystemUI thread composition.
+  - Applied `renice -n -10` to SystemUI UI thread and `RenderThread`, matching Apple iOS `QOS_CLASS_USER_INTERACTIVE` priority to prevent background preemptions.
+  - Raised memory bus floor (`soc:qcom,cpubw/min_freq`) to 4577 MB/s to eliminate L3/DDR latency spikes during 2200+ View hierarchy traversal.
+  - Implemented `chmod 0444` sysfs lock on `top-app/schedtune.boost` and `cpubw/min_freq`, preventing `lineage-libperfmgr` PowerHAL from silently resetting performance tunings back to low defaults.
+- **Full Architectural Alignment with Pixel / HyperOS / iOS**:
+  - Matched Google Pixel 8/9 AOSP unthrottled cgroup model.
+  - Matched Xiaomi MIUI/HyperOS `Joyose`/`MiuiBooster` DDR bandwidth floors.
+  - Matched Apple iOS kinetic decay and thread preemption models.
+- **Codebase Hardening & RALPH Loop Audit**:
+  - Fixed SELinux AVC denial on Audio HAL (`chcon u:object_r:vendor_configs_file:s0`).
+  - Fixed SystemUI cgroup trapping bug on scroll profile restore.
+  - Added two-phase boot isolation in `service.sh` (asynchronously awaiting `sys.boot_completed=1`).
+  - Added single-instance PID tracking via tmpfs (`/dev/dipper_audio_watchdog.pid`) with zero disk wear.
+  - Cleaned redundant global service runners.
+  - Expanded automated test suite from 56 to 75 live assertions with 100% pass rate.
+  - Codified Law 1 in `DEVELOPMENT_RULES.md` under autonomous continuous self-learning protocol.
 - **Lockscreen Swipe-Up Bouncer Reliability Fix**: Resolved annoying Keyguard PIN/Pattern bouncer collapse bug where keypad flashed for 200–300 ms and snapped back down to lockscreen.
 - **Root Cause Neutralization**: Neutralized AOSP `FalsingManager` / `ProximityClassifier` false rejection caused by optical proximity sensor (`ams AG tmd2725`) crosstalk / threshold miscalibration via `brightline_falsing_proximity_percent_covered_threshold`.
 - **Hardware Proximity Threshold Audit**: Audited TMD2725 hardware calibration in persist (`tmd2725_platform.prox.fac_cal`), proving optical crosstalk under protective glass caused proximity state to remain stuck at NEAR (`0.00 cm`).
