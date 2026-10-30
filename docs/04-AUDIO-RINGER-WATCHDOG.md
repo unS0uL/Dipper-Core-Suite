@@ -27,6 +27,7 @@ During rapid ringer mode changes, the framework sends state changes down through
 
 1. **Automated Background Watchdog (`audio_watchdog.sh`)**:
    - A lightweight shell daemon runs at `low` priority monitoring the system setting `mode_ringer` via `settings get global mode_ringer`.
+   - Process lifecycle is tracked cleanly via `/dev/dipper_audio_watchdog.pid` with graceful SIGTERM termination on toggle.
    - When a transition back to mode `2` (`RINGER_MODE_NORMAL` / Sound) is detected:
      - The watchdog verifies stream output routing and volume state.
      - If the HAL is unresponsive or muted, it issues an audio subsystem reset by restarting `android.hardware.audio.service`.
@@ -35,3 +36,5 @@ During rapid ringer mode changes, the framework sends state changes down through
    - The WebUI exposes two instant recovery triggers:
      - **`Restart Audio HAL`**: Directly restarts the audio service without dropping active network or app states.
      - **`Reset Speaker Routing`**: Issues an explicit `media volume` and routing broadcast to force sound back to the loudspeaker.
+3. **Automated Verification**:
+   - Fully covered by the module automated test suite (`tools/test_suite.sh`), verifying PID creation, ringer state queries, and clean process teardown.

@@ -90,7 +90,9 @@ In addition to kernel IRQ unmasking, when `fb_black == 1`, the driver transmits 
 
 3. **Active Keylayout & IDC Injection**:
    Injects:
-   - `uinput-goodix.kl` with `key 106 DPAD_RIGHT WAKE`
+   - `uinput-goodix.kl` with:
+     - `key 106 DPAD_RIGHT WAKE` (wakes display and routes touch)
+     - `key 353 DPAD_CENTER WAKE` (handles vendor-specific Milan HV center tap event)
    - `uinput-goodix.idc` with `device.wake = 1`
 
 4. **Zero Battery Drain & Immediate Suspend**:

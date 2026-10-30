@@ -67,9 +67,11 @@ The module includes built-in `updateJson` support:
 
 ## Deep Technical Documentation
 
-For root cause analyses, kernel traces, and architectural details:
-- [Fingerprint Screen-Off Wake & Goodix TA Analysis](docs/01-FINGERPRINT-WAKE.md)
-- [Statsd & Daemon 5ms CPU Loop Battery Analysis](docs/02-BATTERY-OPTIMIZER.md)
-- [VoIP AEC Fallback & Far-End Echo Elimination](docs/03-VOIP-AEC-FALLBACK.md)
-- [Audio Ringer Watchdog & Routing Recovery](docs/04-AUDIO-RINGER-WATCHDOG.md)
-- [60Hz Kinematic Scroll Engine & Micro-Jank Elimination](docs/05-KINEMATIC-SCROLL-ENGINE.md)
+Comprehensive root cause analyses, kernel traces, and architectural deep-dives are maintained in the [docs/](docs/README.md) directory:
+- [01. Fingerprint Screen-Off Wake & Goodix TA Analysis](docs/01-FINGERPRINT-WAKE.md)
+- [02. Statsd & Daemon 5ms CPU Loop Battery Analysis](docs/02-BATTERY-OPTIMIZER.md)
+- [03. VoIP AEC Fallback & Far-End Echo Elimination](docs/03-VOIP-AEC-FALLBACK.md)
+- [04. Audio Ringer Watchdog & Routing Recovery](docs/04-AUDIO-RINGER-WATCHDOG.md)
+- [05. 60Hz Kinematic Scroll Engine 3.0 & Micro-Jank Elimination](docs/05-KINEMATIC-SCROLL-ENGINE.md)
+- [06. Standalone Dialer Battery Optimizer & Safety Guard](docs/06-STANDALONE-DIALER-OPTIMIZER.md)
+- [07. Lockscreen Swipe Bouncer Reliability Fix](docs/07-LOCKSCREEN-SWIPE-BOUNCER-FIX.md)
